@@ -104,10 +104,16 @@ main{display:grid;gap:20px;min-width:0}
 .days{display:grid;gap:12px}
 .warn{margin-top:14px;padding:10px 14px;border-radius:8px;background:var(--warn-soft);border:1px solid var(--warn);font-size:13.5px;display:grid;gap:6px}
 .warn p{margin:0}
-.item.spice{grid-template-columns:auto minmax(0,1fr) auto auto}
-.item.spice .btn{white-space:nowrap}
-.item.have .nm{color:var(--muted)}
-@media (max-width:520px){.item.spice{grid-template-columns:auto minmax(0,1fr) auto}.item.spice .btn{grid-column:2;justify-self:start}}
+.item .btn{white-space:nowrap}
+.item .nm{cursor:pointer}
+.have-btn{opacity:.8}
+.pantry-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px;margin-bottom:16px;padding:10px 14px;background:var(--sunk);border-radius:8px;font-size:13px}
+.pantry-bar p{margin:0;max-width:60ch}
+.pantry-bar .btn{white-space:normal;text-align:left}
+.have-sec{margin:4px 0 18px}
+.have-sec summary{cursor:pointer;font-weight:700;font-size:14px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.item.have{grid-template-columns:minmax(0,1fr) auto auto}
+.item.have .nm{color:var(--muted);font-weight:500}
 .hint{font-size:12px;color:var(--muted);line-height:1.4}
 .chip{display:inline-block;margin-left:8px;font-family:var(--body);font-size:11px;font-weight:600;color:var(--accent);background:var(--accent-soft);padding:2px 8px;border-radius:999px;vertical-align:middle}
 #prep{display:grid;gap:22px}
@@ -164,7 +170,7 @@ details.ing li{display:flex;justify-content:space-between;gap:12px;max-width:340
 .aisle{margin-bottom:18px}
 .aisle h3{font-size:14px;font-family:var(--body);font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px}
 .items{border:1px solid var(--line);border-radius:8px;overflow:hidden}
-.item{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto auto;gap:4px 12px;align-items:center;padding:9px 12px;border-top:1px solid var(--line)}
+.item{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto auto auto;gap:4px 12px;align-items:center;padding:9px 12px;border-top:1px solid var(--line)}
 .item:first-child{border-top:0}
 .item input{width:18px;height:18px;accent-color:var(--accent);margin:0}
 .item .nm{font-weight:600}
@@ -173,7 +179,7 @@ details.ing li{display:flex;justify-content:space-between;gap:12px;max-width:340
 .item .pk{font-family:var(--mono);font-size:13px;text-align:right}
 .item .pr{font-family:var(--mono);font-size:14px;text-align:right;min-width:62px}
 .item.done .nm,.item.done .pk,.item.done .pr{opacity:.45;text-decoration:line-through}
-@media (max-width:520px){.item{grid-template-columns:auto minmax(0,1fr) auto}.item .need{grid-column:2;text-align:left}.item .pk{grid-column:2;text-align:left}.item .pr{grid-row:1;grid-column:3}.item input{grid-row:1 / span 3}}
+@media (max-width:520px){.item{grid-template-columns:auto minmax(0,1fr) auto}.item .need{grid-column:2;text-align:left}.item .pk{grid-column:2;text-align:left}.item .pr{grid-row:1;grid-column:3}.item input{grid-row:1 / span 4}.item .have-btn{grid-column:2;justify-self:start}.item.have{grid-template-columns:minmax(0,1fr) auto}.item.have .need{grid-column:1}.item.have .btn{grid-column:2;grid-row:1 / span 2}}
 .total{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px;padding:14px 0 0;border-top:2px solid var(--fg)}
 .total .big{font-family:var(--display);font-size:30px;font-weight:800}
 .empty{padding:24px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:8px}
@@ -802,37 +808,42 @@ function renderPlan(){
   $("planMeta").textContent = (state.plan.prep ? "Gaminate 2 kartus per savaitę, todėl patiekalai kartojasi partijos dienomis. " : "") + `Savaitės vidurkis: ${nf(wk/7)} kcal ir ${r0(avgP)} g baltymų per dieną (tikslas ${nf(t.kcal)} kcal ir ${t.protein} g).`;
 }
 
+const STAPLES = ["salt","bpepper","rapeseed","olive","vinegar","honey"];
 function renderShop(){
-  const list = shoppingList();
+  const all = shoppingList();
+  const list = all.filter(it => !state.have.has(it.k)), have = all.filter(it => state.have.has(it.k));
   const s = STORES.find(z=>z.id===state.store);
   const ppl = state.profile.people;
-  $("shopMeta").textContent = `${list.length} ${prod(list.length)} 7 dienoms · ${ppl} ${ppl>1?"asm.":"asmeniui"} · kainos: ${s.n}`;
-  let html = "";
+  $("shopMeta").textContent = `${list.length} ${prod(list.length)} pirkti 7 dienoms · ${ppl} ${ppl>1?"asm.":"asmeniui"} · kainos: ${s.n}`;
+  const staples = STAPLES.filter(k => all.some(it => it.k===k) && !state.have.has(k));
+  let html = `<div class="pantry-bar"><p>Pažymėkite <b>Turiu namuose</b> prie produktų, kuriuos jau turite. Jie dings iš sąrašo ir sumos.</p>${staples.length ? `<button type="button" class="btn sm" id="staples">Turiu įprastus produktus (${staples.map(k=>I[k][1].toLowerCase()).join(", ")})</button>` : ""}</div>`;
+  const row = it => {
+    const done = state.done.has(it.k);
+    const pcs = it.x[11] ? ` · ≈${Math.ceil(it.g/it.x[11])} ${it.x[12]||"vnt."}` : "";
+    const o = offer(s.id, it), e = o ? null : estimate(s.id, it);
+    return `<div class="item${done?" done":""}">
+      <input type="checkbox" id="ck-${it.k}" data-k="${it.k}" ${done?"checked":""}>
+      <label class="nm" for="ck-${it.k}">${esc(it.x[1])}${o ? `<small><a href="${esc(o.url)}" target="_blank" rel="noopener">${esc(o.name)}</a> · ${eur(o.price)}</small>` : ""}</label>
+      <span class="need num">reikia ${fmtG(it.g)}${pcs}</span>
+      <span class="pk">${o ? `${o.packs} pak.` : e ? `≈ ${e.packs} pak.` : `${it.packs} × ${esc(it.x[8])}`}</span>
+      <button type="button" class="btn sm have-btn" data-have="${it.k}" aria-pressed="false" aria-label="${esc(it.x[1])}: turiu namuose">Turiu namuose</button>
+      <span class="pr${e?" est":""}">${o ? eur(o.cost) : e ? "≈ " + eur(e.cost) : "–"}</span>
+    </div>`;
+  };
   AISLES.forEach(a => {
     const items = list.filter(it => it.x[10]===a).sort((x,y)=>x.x[1].localeCompare(y.x[1], "lt"));
-    if (!items.length) return;
-    html += `<div class="aisle"><h3>${a}</h3><div class="items">` + items.map(it => {
-      const done = state.done.has(it.k);
-      const pcs = it.x[11] ? ` · ≈${Math.ceil(it.g/it.x[11])} vnt.` : "";
-      const o = offer(s.id, it), e = o ? null : estimate(s.id, it);
-      if (it.x[6].includes("x")) {
-        const have = state.have.has(it.k);
-        return `<div class="item spice${have?" have":""}${done?" done":""}">
-        <input type="checkbox" id="ck-${it.k}" data-k="${it.k}" ${done?"checked":""} aria-label="${esc(it.x[1])}: nupirkta">
-        <span class="nm">${esc(it.x[1])}${o && !have ? `<small><a href="${esc(o.url)}" target="_blank" rel="noopener">${esc(o.name)}</a> · ${eur(o.price)}</small>` : have ? "<small>Turite namuose, į sumą neįskaičiuota</small>" : ""}</span>
-        <button type="button" class="btn sm" data-have="${it.k}" aria-pressed="${have}">${have ? "Reikia pirkti" : "Turiu namuose"}</button>
-        <span class="pr${e?" est":""}">${have ? "–" : o ? eur(o.cost) : e ? "≈ " + eur(e.cost) : "–"}</span>
-      </div>`;
-      }
-      return `<label class="item${done?" done":""}" for="ck-${it.k}">
-        <input type="checkbox" id="ck-${it.k}" data-k="${it.k}" ${done?"checked":""}>
-        <span class="nm">${esc(it.x[1])}${o ? `<small><a href="${esc(o.url)}" target="_blank" rel="noopener">${esc(o.name)}</a> · ${eur(o.price)}</small>` : ""}</span>
-        <span class="need num">reikia ${fmtG(it.g)}${pcs}</span>
-        <span class="pk">${o ? `${o.packs} pak.` : e ? `≈ ${e.packs} pak.` : `${it.packs} × ${esc(it.x[8])}`}</span>
-        <span class="pr${e?" est":""}">${o ? eur(o.cost) : e ? "≈ " + eur(e.cost) : "–"}</span>
-      </label>`; }).join("") + `</div></div>`;
+    if (items.length) html += `<div class="aisle"><h3>${a}</h3><div class="items">${items.map(row).join("")}</div></div>`;
   });
-  const total = basketTotal(s.id, list);
+  if (!list.length) html += `<div class="empty">Viską jau turite namuose. Nieko pirkti nereikia.</div>`;
+  if (have.length) {
+    html += `<details class="have-sec"${state.haveOpen?" open":""}><summary>Turite namuose (${have.length}), į sumą neįskaičiuota</summary><div class="items">` +
+      have.sort((x,y)=>x.x[1].localeCompare(y.x[1], "lt")).map(it => `<div class="item have">
+        <span class="nm">${esc(it.x[1])}</span>
+        <span class="need num">reikia ${fmtG(it.g)}</span>
+        <button type="button" class="btn sm" data-have="${it.k}" aria-pressed="true" aria-label="${esc(it.x[1])}: reikia pirkti">Reikia pirkti</button>
+      </div>`).join("") + `</div></details>`;
+  }
+  const total = basketTotal(s.id, all);
   if (total != null && s.est) {
     html += `<div class="total"><span>Preliminari suma, <b>${s.n}</b></span><span class="big num">≈ ${eur(total)}</span></div>`;
     html += `<p class="note">${s.n} produktų kainų internete neskelbia, todėl suma apytikslė: Maximos ir Rimi kainų vidurkis × ${String(s.est).replace(".", ",")}. Koeficientas paimtas iš 2026 m. liepos SeeNext krepšelio tyrimo (Lidl 32,74 €, Rimi 34,94 €, Maxima 35,93 €, Norfa 36,61 €, Iki 37,90 €). Tikra suma parduotuvėje gali skirtis keliais eurais.</p>`;
@@ -841,7 +852,6 @@ function renderShop(){
     html += `<p class="note">Kainos surinktos ${priceDate}. Kiekvienam produktui parinkta pakuotė, kuri reikiamam kiekiui kainuoja mažiausiai. Paspaudę pavadinimą jį atidarysite parduotuvės svetainėje. Pakuotės suapvalintos į didesnę pusę, todėl aliejaus, medaus ir kruopų liks ir kitai savaitei.</p>`;
   } else {
     html += `<div class="total"><span><b>${s.n}</b> kainų internete neskelbia, todėl sąraše nurodyti tik kiekiai.</span></div>`;
-    html += `<p class="note">Palyginimui galite pasirinkti Maxima arba Rimi, kurių kainos paimtos iš e. parduotuvių.</p>`;
   }
   $("shop").innerHTML = html;
 }
@@ -875,7 +885,9 @@ $("reshuffle").addEventListener("click", () => generate(true));
 $("stores").addEventListener("change", e => { if (e.target.name==="store"){ state.store=e.target.value; save(); renderShop(); } });
 $("days").addEventListener("click", e => { const b=e.target.closest("[data-swap]"); if(!b) return; const [d,mi]=b.dataset.swap.split(":").map(Number); swapMeal(d,mi); });
 $("shop").addEventListener("click", e => {
+  if (e.target.closest("#staples")) { const on = new Set(shoppingList().map(it=>it.k)); STAPLES.filter(k => on.has(k)).forEach(k => state.have.add(k)); save(); renderStores(); renderShop(); toast("Įprasti produktai pažymėti kaip turimi"); return; }
   const b = e.target.closest("[data-have]"); if (!b) return;
+  state.haveOpen = !!$("shop").querySelector(".have-sec[open]");
   const k = b.dataset.have; state.have.has(k) ? state.have.delete(k) : state.have.add(k);
   save(); renderStores(); renderShop();
 });
