@@ -278,6 +278,14 @@ textarea.fallback{width:100%;min-height:160px;margin-top:10px;font-family:var(--
           </div>
           <small class="hint">Gaminant 2 kartus per savaitę, kiekvienai partijai parenkama po vieną patiekalą pusryčiams, pietums ir vakarienei.</small>
         </fieldset>
+        <fieldset>
+          <legend>Laikas virtuvėje</legend>
+          <div class="seg">
+            <input type="radio" name="quick" id="q0" value="0" checked><label for="q0">Neribotas</label>
+            <input type="radio" name="quick" id="q1" value="1"><label for="q1">Iki 15 min. patiekalui</label>
+          </div>
+          <small class="hint">Greiti receptai: iki 3 žingsnių, daug baltymų. Tinka sportuojantiems, kuriems trūksta laiko.</small>
+        </fieldset>
         <button class="btn primary" type="submit" id="go">Sudaryti savaitės planą</button>
       </form>
     </aside>
@@ -500,6 +508,23 @@ const R = [
   {id:"s10",t:"s",n:"Kietai virti kiaušiniai su agurku",min:12,i:[["eggs",120],["cucumber",100],["salt",0.3]],s:["Kiaušinius virkite 9–10 min. ir atvėsinkite šaltame vandenyje.","Patiekite su agurku ir žiupsneliu druskos. Nulupti kiaušiniai šaldytuve išsilaiko 3 dienas."]},
   {id:"s11",t:"s",n:"Traškūs kepti avinžirniai",min:30,i:[["chickpeas",120],["olive",5],["paprikap",1],["salt",0.5]],s:["Įkaitinkite orkaitę iki 200 °C.","Nusunktus avinžirnius nusausinkite, sumaišykite su aliejumi, malta paprika ir druska.","Kepkite 25–30 min., kartą pamaišydami. Laikykite sandarioje dėžutėje."]},
   {id:"s12",t:"s",n:"Tofu su humusu ir agurku",min:5,i:[["tofu",100],["hummus",50],["cucumber",80]],s:["Tofu ir agurką supjaustykite lazdelėmis.","Valgykite padažę į humusą."]},
+  // greiti (iki 15 min.), daug baltymų
+  {id:"l13",t:"l",n:"Tuno ir avinžirnių salotos",min:10,i:[["tuna",120],["chickpeas",120],["cucumber",100],["tomato",100],["olive",8],["lemon",10],["salt",0.3]],
+   s:["Tuną ir avinžirnius nusunkite.","Agurką ir pomidorą supjaustykite kubeliais.","Viską sumaišykite su aliejumi, citrinos sultimis ir druska."]},
+  {id:"l14",t:"l",n:"Vištienos suktinukai su jogurto padažu",min:15,i:[["chicken",140],["tortilla",120],["yogurt",50],["cucumber",80],["pepper",60],["paprikap",1],["salt",0.5]],
+   s:["Vištieną supjaustykite juostelėmis, pabarstykite malta paprika ir druska.","Kepkite įkaitintoje keptuvėje 6–7 min., kol iškeps.","Tortilijas patepkite jogurtu, sudėkite vištieną, agurką ir papriką, susukite."]},
+  {id:"l15",t:"l",n:"Varškė su daržovėmis ir rugine duona",min:5,i:[["curd",200],["rye",80],["cucumber",120],["tomato",120],["dill",3],["salt",0.3]],
+   s:["Varškę sumaišykite su smulkintais krapais ir druska.","Agurką ir pomidorą supjaustykite.","Valgykite su rugine duona."]},
+  {id:"l16",t:"l",n:"Tofu ir avinžirnių salotos",min:10,i:[["tofu",150],["chickpeas",120],["cucumber",100],["pepper",80],["olive",8],["lemon",10],["salt",0.5]],
+   s:["Tofu supjaustykite kubeliais, avinžirnius nusunkite.","Agurką ir papriką supjaustykite.","Viską sumaišykite su aliejumi, citrinos sultimis ir druska."]},
+  {id:"d13",t:"d",n:"Lašiša su makaronais ir brokoliais",min:15,i:[["salmon",150],["pasta",70],["broccoli",150],["olive",5],["lemon",10],["salt",0.5]],
+   s:["Makaronus virkite pasūdytame vandenyje. Likus 4 min. įmeskite brokolius.","Tuo metu lašišą pasūdykite ir kepkite keptuvėje po 4 min. iš abiejų pusių.","Nusunkite makaronus su brokoliais, apšlakstykite aliejumi ir citrinos sultimis, patiekite su lašiša."]},
+  {id:"d14",t:"d",n:"Jautienos ir pupelių tortilijos",min:15,i:[["beef",130],["beans",120],["tomato",120],["tortilla",60],["paprikap",1],["salt",0.5]],
+   s:["Keptuvėje 5–6 min. kepkite maltą jautieną, kol paruduos.","Sudėkite pupeles, pjaustytus pomidorus, maltą papriką ir druską, kaitinkite 5 min.","Įdarą susukite į tortilijas."]},
+  {id:"d15",t:"d",n:"Kiaušiniai su pupelėmis pomidorų padaže",min:15,i:[["eggs",180],["beans",120],["tomato",200],["onion",40],["olive",5],["paprikap",1],["salt",0.5]],
+   s:["Aliejuje 2 min. pakepinkite smulkintą svogūną.","Sudėkite pjaustytus pomidorus, pupeles, maltą papriką ir druską, kaitinkite 5 min.","Padaže padarykite duobutes, įmuškite kiaušinius, uždenkite ir kepkite 5–6 min."]},
+  {id:"d16",t:"d",n:"Tofu ir daržovių keptinis su rugine duona",min:15,i:[["tofu",200],["mixveg",250],["rapeseed",10],["garlic",5],["rye",60],["salt",0.5]],
+   s:["Tofu supjaustykite kubeliais ir 5 min. apkepkite aliejuje.","Sudėkite šaldytas daržoves ir smulkintą česnaką, kepkite dar 6–7 min.","Pasūdykite ir valgykite su rugine duona."]},
 ];
 R.forEach(r => { r.flags = new Set(r.i.flatMap(([k]) => I[k][6].split("").filter(Boolean))); r.base = nutr(r, 1); });
 
@@ -547,7 +572,7 @@ function readForm(){
   const v = n => document.querySelector(`input[name=${n}]:checked`)?.value;
   const num = (id, lo, hi, d) => { const x = parseFloat($(id).value); return isFinite(x) ? Math.min(hi, Math.max(lo, x)) : d; };
   return { sex:v("sex"), age:num("age",16,90,30), people:Math.round(num("people",1,8,1)), height:num("height",130,220,170), weight:num("weight",35,200,70),
-    act:parseFloat($("activity").value), goal:v("goal"), diet:v("diet"), ex:[...document.querySelectorAll("input[name=ex]:checked")].map(x=>x.value), mpd:+v("mpd"), prep:v("prep")!=="0" };
+    act:parseFloat($("activity").value), goal:v("goal"), diet:v("diet"), ex:[...document.querySelectorAll("input[name=ex]:checked")].map(x=>x.value), mpd:+v("mpd"), prep:v("prep")!=="0", quick:v("quick")==="1" };
 }
 function restoreForm(f){
   const set = (n,val) => { const el = document.querySelector(`input[name=${n}][value="${val}"]`); if (el) el.checked = true; };
@@ -555,6 +580,7 @@ function restoreForm(f){
   ["age","people","height","weight"].forEach(id => f[id] != null && ($(id).value = f[id]));
   if (f.act) $("activity").value = String(f.act);
   if (f.prep != null) set("prep", f.prep ? "1" : "0");
+  if (f.quick != null) set("quick", f.quick ? "1" : "0");
   document.querySelectorAll("input[name=ex]").forEach(x => x.checked = (f.ex||[]).includes(x.value));
 }
 function save(){ try { localStorage.setItem("krepselis", JSON.stringify({ store:state.store, form:state.profile, have:[...state.have] })); } catch(e) {} }
@@ -574,7 +600,9 @@ function computeTarget(p){
   if (kcal < floor) warn.push(`Apskaičiuota norma buvo mažesnė už saugią ribą (${floor} kcal), todėl ją padidinome. Mažiau valgyti verta tik prižiūrint gydytojui.`);
   kcal = Math.max(floor, Math.round(kcal/10)*10);
   if (bmi >= 35) warn.push(`Jūsų KMI yra ${bmi.toFixed(1).replace(".", ",")}. Esant tokiam svoriui, mitybos planą geriausia aptarti su gydytoju ar dietologu.`);
-  const protein = Math.round(p.weight * ({lose:1.8, keep:1.4, gain:1.8}[goal]));
+  // very active people (6+ sessions a week) get the higher end of sports-nutrition ranges (1.6–2.2 g/kg)
+  const sport = p.act >= 1.725 ? 0.2 : 0;
+  const protein = Math.round(p.weight * ({lose:1.8, keep:1.4, gain:1.8}[goal] + sport));
   const fat = Math.round(kcal*0.28/9);
   const carbs = Math.max(0, Math.round((kcal - protein*4 - fat*9)/4));
   return { kcal, protein, fat, carbs, bmr:Math.round(bmr), tdee:Math.round(tdee), bmi, goal, warn };
@@ -582,9 +610,13 @@ function computeTarget(p){
 
 // ---------- eligibility ----------
 const DIET_BLOCK = { all:"", pes:"m", veg:"mf", vgn:"mfdeh" };
+const QUICK_MIN = 15;
 function eligible(type, p){
   const block = new Set((DIET_BLOCK[p.diet] + p.ex.join("")).split("").filter(Boolean));
-  return R.filter(r => r.t===type && ![...r.flags].some(f => block.has(f)));
+  const ok = R.filter(r => r.t===type && ![...r.flags].some(f => block.has(f)));
+  if (!p.quick) return ok;
+  const fast = ok.filter(r => r.min <= QUICK_MIN);
+  return fast.length ? fast : ok;    // never leave a meal empty
 }
 
 // ---------- plan ----------
@@ -608,7 +640,7 @@ const BATCHES = [
   { days:[0,1,2],   when:"Sekmadienį",        forTxt:"pirmadieniui–trečiadieniui" },
   { days:[3,4,5,6], when:"Trečiadienio vakare", forTxt:"ketvirtadieniui–sekmadieniui" },
 ];
-const NOPREP = new Set(["b3","b7","d5"]);          // best cooked fresh
+const NOPREP = new Set(["b3","b7","d5","d15"]);          // best cooked fresh
 const prepPool = pool => { const f = pool.filter(r => !NOPREP.has(r.id)); return f.length ? f : pool; };
 const batchOf = d => BATCHES.findIndex(b => b.days.includes(d));
 function swapBatch(d, mi){
@@ -814,7 +846,7 @@ function renderPlan(){
     </article>`;
   }).join("");
   const avgP = state.plan.days.reduce((a,day)=>a+day.meals.reduce((b,m)=>b+mealNutr(m).p,0),0)/7;
-  $("planMeta").textContent = (state.plan.prep ? "Gaminate 2 kartus per savaitę, todėl patiekalai kartojasi partijos dienomis. " : "") + `Savaitės vidurkis: ${nf(wk/7)} kcal ir ${r0(avgP)} g baltymų per dieną (tikslas ${nf(t.kcal)} kcal ir ${t.protein} g).`;
+  $("planMeta").textContent = (state.profile.quick ? "Greiti receptai: iki 15 min. patiekalui. " : "") + (state.plan.prep ? "Gaminate 2 kartus per savaitę, todėl patiekalai kartojasi partijos dienomis. " : "") + `Savaitės vidurkis: ${nf(wk/7)} kcal ir ${r0(avgP)} g baltymų per dieną (tikslas ${nf(t.kcal)} kcal ir ${t.protein} g).`;
 }
 
 const STAPLES = ["salt","bpepper","rapeseed","olive","vinegar","honey"];
