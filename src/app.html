@@ -1,0 +1,809 @@
+<title>Krepšelis mitybos planas</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: two-pane tool. Profile form on the left (sticky on desktop), results on the right: targets, store choice, then plan / shopping tabs. Stacks to one column on phones. */
+:root{
+  --bg:#f6f3f4; --surface:#ffffff; --sunk:#efe9ec; --fg:#241a1f; --muted:#6f6169; --line:#e3dade;
+  --accent:#9b1f55; --accent-fg:#ffffff; --accent-soft:#f6e2eb; --good:#3d6b38; --good-soft:#e4efe1; --warn:#9a5b00;
+  --p:#9b1f55; --c:#c08a1e; --f:#4f7a8c;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"Figtree", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#161114; --surface:#201a1d; --sunk:#1b1518; --fg:#f2e9ee; --muted:#a8989f; --line:#372d32;
+  --accent:#e2659d; --accent-fg:#1a0d13; --accent-soft:#3a1d2a; --good:#93c587; --good-soft:#1f2e1d; --warn:#e3a54a;
+  --p:#e2659d; --c:#dcb04f; --f:#7fb3c8; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#161114; --surface:#201a1d; --sunk:#1b1518; --fg:#f2e9ee; --muted:#a8989f; --line:#372d32;
+  --accent:#e2659d; --accent-fg:#1a0d13; --accent-soft:#3a1d2a; --good:#93c587; --good-soft:#1f2e1d; --warn:#e3a54a;
+  --p:#e2659d; --c:#dcb04f; --f:#7fb3c8; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.5}
+.wrap{max-width:1240px;margin:0 auto;padding-block:20px 56px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.15}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:8px 24px;padding-bottom:18px;border-bottom:1px solid var(--line);margin-bottom:22px}
+.brand h1{font-size:clamp(28px,4vw,40px);font-weight:800;letter-spacing:-.02em}
+.brand h1 span{color:var(--accent)}
+.brand p{margin:4px 0 0;color:var(--muted);max-width:60ch}
+.steps{display:flex;gap:6px;flex-wrap:wrap;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.steps b{color:var(--fg);font-weight:600}
+
+.grid{display:grid;grid-template-columns:320px minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+aside.panel{position:sticky;top:calc(env(safe-area-inset-top, 0px) + 12px)}
+@media (max-width:900px){aside.panel{position:static}}
+.panel h2{font-size:18px;font-weight:700;margin-bottom:12px}
+.eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:600;margin:0 0 6px}
+
+form{display:grid;gap:14px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label.f{display:grid;gap:4px;font-size:13px;font-weight:600}
+label.f small{font-weight:400;color:var(--muted)}
+input[type=number],select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--sunk)}
+fieldset{border:0;padding:0;margin:0;display:grid;gap:6px}
+legend{font-size:13px;font-weight:600;margin-bottom:6px;padding:0}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg label{padding:6px 10px;border:1px solid var(--line);border-radius:999px;font-size:13px;cursor:pointer;background:var(--sunk)}
+.seg input:checked + label{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.seg input:focus-visible + label{outline:2px solid var(--accent);outline-offset:2px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 14px;border-radius:8px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-weight:600;font-size:14px}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.sm{padding:5px 9px;font-size:12px;border-radius:6px}
+
+main{display:grid;gap:20px;min-width:0}
+
+.targets{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,2fr);gap:20px;align-items:center}
+@media (max-width:640px){.targets{grid-template-columns:minmax(0,1fr)}}
+.kcal{font-family:var(--display);font-size:52px;font-weight:800;line-height:1;letter-spacing:-.03em}
+.kcal small{font-size:16px;font-weight:500;color:var(--muted);letter-spacing:0;margin-left:4px}
+.kcal-sub{color:var(--muted);font-size:13px;margin-top:6px}
+.macros{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.macro .lab{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.macro .val{font-family:var(--mono);font-size:20px;font-weight:500}
+.macro .val small{font-size:12px;color:var(--muted)}
+.bar{display:flex;height:8px;border-radius:4px;overflow:hidden;margin-top:12px;background:var(--sunk)}
+
+.stores{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.store{position:relative}
+.store input{position:absolute;opacity:0;pointer-events:none}
+.store label{display:grid;gap:2px;padding:12px;border:1px solid var(--line);border-radius:8px;cursor:pointer;background:var(--sunk);height:100%}
+.store .sn{font-weight:700;font-family:var(--display);font-size:16px}
+.store .sd{font-size:12px;color:var(--muted)}
+.store .st{font-family:var(--mono);font-size:15px;margin-top:6px}
+.store .na{font-size:13px;color:var(--muted);margin-top:6px}
+.item .nm small a{color:inherit;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:2px}
+.item .nm small a:hover{color:var(--accent)}
+.store .badge{position:absolute;top:8px;right:8px;font-size:10px;text-transform:uppercase;letter-spacing:.06em;font-weight:700;color:var(--good);background:var(--good-soft);padding:2px 6px;border-radius:4px}
+.store input:checked + label{border-color:var(--accent);background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent)}
+.store input:focus-visible + label{outline:2px solid var(--accent);outline-offset:2px}
+.note{font-size:12px;color:var(--muted);margin:10px 0 0}
+
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:-4px 0 16px;flex-wrap:wrap}
+.tab{border:0;background:none;padding:10px 12px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab[aria-selected=true]{color:var(--fg);border-bottom-color:var(--accent)}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.toolbar .meta{font-size:13px;color:var(--muted)}
+
+.days{display:grid;gap:12px}
+.hint{font-size:12px;color:var(--muted);line-height:1.4}
+.chip{display:inline-block;margin-left:8px;font-family:var(--body);font-size:11px;font-weight:600;color:var(--accent);background:var(--accent-soft);padding:2px 8px;border-radius:999px;vertical-align:middle}
+#prep{display:grid;gap:22px}
+.session{border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:14px}
+.session-h{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:12px}
+.session-h h3{font-size:22px;font-weight:800}
+.session-h .eyebrow{color:var(--accent)}
+.facts{display:flex;gap:18px;margin:0}
+.facts dt{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-family:var(--body)}
+.facts dd{margin:0;font-size:20px}
+.boxes{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.box{background:var(--sunk);border-radius:8px;padding:12px 14px;min-width:0}
+.box ul{margin:0;padding:0;list-style:none;font-size:13px;display:grid;gap:3px}
+.box ul li{display:flex;justify-content:space-between;gap:12px}
+.box ul.tips li{display:list-item;margin-left:16px;list-style:disc}
+.sub{font-family:var(--body);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.precs{display:grid;gap:10px}
+.prec{border-top:1px solid var(--line);padding-top:12px}
+.prec:first-child{border-top:0;padding-top:0}
+.prec-h{display:flex;gap:12px;align-items:flex-start}
+.prec-h h4{font-size:16px;margin:0}
+.prec-h .mm{margin:2px 0 0}
+.pstep{flex:none;width:28px;height:28px;border-radius:50%;background:var(--accent);color:var(--accent-fg);display:grid;place-items:center;font-size:13px;font-weight:600}
+.prec .rec{margin-left:40px}
+@media (max-width:520px){.prec .rec{margin-left:0}}
+.rec ul{margin:0;padding:0;list-style:none;font-size:13px;display:grid;gap:2px}
+.rec ul li{display:flex;justify-content:space-between;gap:12px}
+.pnote{margin:8px 0 0;font-size:13px;font-weight:600}
+.quick{margin:0;font-size:13px;color:var(--muted)}
+.quick b{color:var(--fg)}
+.day{border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.day-h{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:4px 12px;padding:10px 14px;background:var(--sunk);border-bottom:1px solid var(--line)}
+.day-h h3{font-size:16px}
+.day-h h3 span{font-family:var(--body);font-weight:400;color:var(--muted);font-size:13px;margin-left:6px}
+.day-h .tot{font-size:12px;color:var(--muted)}
+.day-h .tot b{color:var(--fg);font-weight:500}
+.ok{color:var(--good)} .off{color:var(--warn)}
+.meal{display:grid;grid-template-columns:84px minmax(0,1fr) auto;gap:4px 12px;padding:10px 14px;border-top:1px solid var(--line);align-items:start}
+.meal:first-of-type{border-top:0}
+.mt{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;padding-top:3px}
+.mn{font-weight:600}
+.mn .lt{font-weight:400;color:var(--muted);font-style:italic}
+.mm{font-size:12px;color:var(--muted)}
+details.ing summary{cursor:pointer;font-size:13px;font-weight:600;color:var(--accent);margin-top:4px;width:max-content}
+details.ing ul{margin:0;padding:0;list-style:none;font-size:13px;display:grid;gap:2px}
+.rec{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:10px 24px;margin-top:8px;padding:12px 14px;background:var(--sunk);border-radius:8px}
+@media (max-width:640px){.rec{grid-template-columns:minmax(0,1fr)}}
+.rh{margin:0 0 6px;font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:var(--muted)}
+.rec ol{margin:0;padding-left:20px;font-size:13.5px;display:grid;gap:6px;max-width:62ch}
+.rec ol li::marker{color:var(--accent);font-weight:700}
+details.ing li{display:flex;justify-content:space-between;gap:12px;max-width:340px}
+@media (max-width:520px){.meal{grid-template-columns:minmax(0,1fr) auto}.mt{grid-column:1 / -1;padding:0}}
+
+.aisle{margin-bottom:18px}
+.aisle h3{font-size:14px;font-family:var(--body);font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px}
+.items{border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.item{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto auto;gap:4px 12px;align-items:center;padding:9px 12px;border-top:1px solid var(--line)}
+.item:first-child{border-top:0}
+.item input{width:18px;height:18px;accent-color:var(--accent);margin:0}
+.item .nm{font-weight:600}
+.item .nm small{display:block;font-weight:400;color:var(--muted);font-style:italic}
+.item .need{font-size:12px;color:var(--muted);text-align:right}
+.item .pk{font-family:var(--mono);font-size:13px;text-align:right}
+.item .pr{font-family:var(--mono);font-size:14px;text-align:right;min-width:62px}
+.item.done .nm,.item.done .pk,.item.done .pr{opacity:.45;text-decoration:line-through}
+@media (max-width:520px){.item{grid-template-columns:auto minmax(0,1fr) auto}.item .need{grid-column:2;text-align:left}.item .pk{grid-column:2;text-align:left}.item .pr{grid-row:1;grid-column:3}.item input{grid-row:1 / span 3}}
+.total{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px;padding:14px 0 0;border-top:2px solid var(--fg)}
+.total .big{font-family:var(--display);font-size:30px;font-weight:800}
+.empty{padding:24px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:8px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom, 0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:8px 14px;border-radius:8px;font-size:13px;font-weight:600}
+textarea.fallback{width:100%;min-height:160px;margin-top:10px;font-family:var(--mono);font-size:12px;background:var(--sunk);border:1px solid var(--line);border-radius:8px;padding:8px;color:var(--fg)}
+@media (prefers-reduced-motion:no-preference){.store label,.btn,.seg label{transition:background .15s,border-color .15s}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>Krepšel<span>is</span></h1>
+      <p>7 dienų mitybos planas pagal jūsų kūną ir tikslą, su receptais ir pirkinių sąrašu jūsų pasirinktai parduotuvei.</p>
+    </div>
+    <div class="steps"><b>1</b> Jūsų poreikiai · <b>2</b> Parduotuvė · <b>3</b> Planas ir sąrašas</div>
+  </header>
+
+  <div class="grid">
+    <aside class="panel" aria-labelledby="pf-h">
+      <p class="eyebrow">1 žingsnis</p>
+      <h2 id="pf-h">Jūsų poreikiai</h2>
+      <form id="profile" novalidate>
+        <fieldset>
+          <legend>Lytis</legend>
+          <div class="seg">
+            <input type="radio" name="sex" id="sex-f" value="f" checked><label for="sex-f">Moteris</label>
+            <input type="radio" name="sex" id="sex-m" value="m"><label for="sex-m">Vyras</label>
+          </div>
+        </fieldset>
+        <div class="row2">
+          <label class="f" for="age">Amžius <input type="number" id="age" min="16" max="90" value="31"></label>
+          <label class="f" for="people">Asmenų <input type="number" id="people" min="1" max="8" value="1"></label>
+        </div>
+        <div class="row2">
+          <label class="f" for="height">Ūgis, cm <input type="number" id="height" min="130" max="220" value="168"></label>
+          <label class="f" for="weight">Svoris, kg <input type="number" id="weight" min="35" max="200" value="68"></label>
+        </div>
+        <label class="f" for="activity">Fizinis aktyvumas
+          <select id="activity">
+            <option value="1.2">Daugiausia sėdimas darbas</option>
+            <option value="1.375" selected>Nedidelis (1–3 treniruotės per savaitę)</option>
+            <option value="1.55">Vidutinis (3–5 per savaitę)</option>
+            <option value="1.725">Didelis (6–7 per savaitę)</option>
+            <option value="1.9">Fizinis darbas ir treniruotės</option>
+          </select>
+        </label>
+        <fieldset>
+          <legend>Tikslas</legend>
+          <div class="seg">
+            <input type="radio" name="goal" id="g-lose" value="lose" checked><label for="g-lose">Numesti svorio</label>
+            <input type="radio" name="goal" id="g-keep" value="keep"><label for="g-keep">Išlaikyti svorį</label>
+            <input type="radio" name="goal" id="g-gain" value="gain"><label for="g-gain">Auginti raumenis</label>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Mityba</legend>
+          <div class="seg">
+            <input type="radio" name="diet" id="d-all" value="all" checked><label for="d-all">Viskas</label>
+            <input type="radio" name="diet" id="d-pes" value="pes"><label for="d-pes">Su žuvimi, be mėsos</label>
+            <input type="radio" name="diet" id="d-veg" value="veg"><label for="d-veg">Vegetariška</label>
+            <input type="radio" name="diet" id="d-vgn" value="vgn"><label for="d-vgn">Veganiška</label>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Neįtraukti</legend>
+          <div class="seg">
+            <input type="checkbox" name="ex" id="x-g" value="g"><label for="x-g">Glitimo</label>
+            <input type="checkbox" name="ex" id="x-d" value="d"><label for="x-d">Laktozės</label>
+            <input type="checkbox" name="ex" id="x-n" value="n"><label for="x-n">Riešutų</label>
+            <input type="checkbox" name="ex" id="x-e" value="e"><label for="x-e">Kiaušinių</label>
+            <input type="checkbox" name="ex" id="x-f" value="f"><label for="x-f">Žuvies</label>
+            <input type="checkbox" name="ex" id="x-s" value="s"><label for="x-s">Sojos</label>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Valgymai per dieną</legend>
+          <div class="seg">
+            <input type="radio" name="mpd" id="m3" value="3"><label for="m3">3 kartai</label>
+            <input type="radio" name="mpd" id="m4" value="4" checked><label for="m4">3 kartai + užkandis</label>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Gaminimas</legend>
+          <div class="seg">
+            <input type="radio" name="prep" id="pr1" value="1" checked><label for="pr1">2 kartus per savaitę</label>
+            <input type="radio" name="prep" id="pr0" value="0"><label for="pr0">Kasdien</label>
+          </div>
+          <small class="hint">Gaminant 2 kartus per savaitę, kiekvienai partijai parenkama po vieną patiekalą pusryčiams, pietums ir vakarienei.</small>
+        </fieldset>
+        <button class="btn primary" type="submit" id="go">Sudaryti savaitės planą</button>
+      </form>
+    </aside>
+
+    <main>
+      <section class="panel" aria-labelledby="tg-h">
+        <p class="eyebrow" id="tg-h">Jūsų dienos norma</p>
+        <div class="targets">
+          <div>
+            <div class="kcal num" id="kcal">–</div>
+            <div class="kcal-sub" id="kcalSub"></div>
+          </div>
+          <div>
+            <div class="macros" id="macros"></div>
+            <div class="bar" id="macroBar" aria-hidden="true"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="st-h">
+        <p class="eyebrow">2 žingsnis</p>
+        <h2 id="st-h">Kur pirksite?</h2>
+        <div class="stores" id="stores" role="radiogroup" aria-label="Parduotuvė"></div>
+        <p class="note">Maximos ir Rimi sumos skaičiuojamos tikromis jų e. parduotuvių kainomis (Maximos kainos iš Barbora). Fizinėje parduotuvėje kainos ir akcijos gali skirtis. Lidl, Iki ir Norfa produktų kainų internete neskelbia.</p>
+      </section>
+
+      <section class="panel" aria-labelledby="pl-h">
+        <p class="eyebrow">3 žingsnis</p>
+        <h2 id="pl-h" style="margin-bottom:14px">Jūsų savaitė</h2>
+        <div class="tabs" role="tablist">
+          <button class="tab" role="tab" id="tab-plan" aria-selected="true" aria-controls="view-plan">Mitybos planas</button>
+          <button class="tab" role="tab" id="tab-prep" aria-selected="false" aria-controls="view-prep">Gaminimo dienos</button>
+          <button class="tab" role="tab" id="tab-shop" aria-selected="false" aria-controls="view-shop">Pirkinių sąrašas</button>
+        </div>
+
+        <div id="view-plan" role="tabpanel" aria-labelledby="tab-plan">
+          <div class="toolbar">
+            <span class="meta" id="planMeta"></span>
+            <button class="btn sm" id="reshuffle" type="button">Sumaišyti visus patiekalus</button>
+          </div>
+          <div class="days" id="days"></div>
+        </div>
+
+        <div id="view-prep" role="tabpanel" aria-labelledby="tab-prep" hidden>
+          <div id="prep"></div>
+        </div>
+
+        <div id="view-shop" role="tabpanel" aria-labelledby="tab-shop" hidden>
+          <div class="toolbar">
+            <span class="meta" id="shopMeta"></span>
+            <button class="btn sm" id="copy" type="button">Kopijuoti sąrašą</button>
+          </div>
+          <div id="shop"></div>
+          <textarea class="fallback" id="copyFallback" hidden readonly aria-label="Pirkinių sąrašo tekstas"></textarea>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+// ---------- Ingredient data ----------
+// key: [English, Lithuanian, kcal, protein, carbs, fat (per 100 g), flags, pack grams, pack label, est. price €, aisle, piece grams?, piece name?]
+// flags: m meat, f fish, d dairy, e egg, g gluten, n nuts, h honey, s soy
+const I = {
+  oats:      ["Rolled oats","Avižiniai dribsniai",370,13,60,7,"g",500,"500 g",1.09,"Kruopos ir duona"],
+  buckwheat: ["Buckwheat","Grikiai",343,13,72,3.4,"",800,"800 g",1.79,"Kruopos ir duona"],
+  rice:      ["Rice","Ryžiai",360,7,79,0.6,"",1000,"1 kg",1.69,"Kruopos ir duona"],
+  pasta:     ["Wholewheat pasta","Pilno grūdo makaronai",350,13,68,2.5,"g",500,"500 g",1.29,"Kruopos ir duona"],
+  rye:       ["Rye bread","Ruginė duona",250,8.5,48,3.3,"g",800,"800 g kepalas",1.69,"Kruopos ir duona"],
+  tortilla:  ["Wholewheat tortillas","Pilno grūdo tortilijos",300,9,50,7,"g",360,"6 vnt.",1.79,"Kruopos ir duona",60],
+  potato:    ["Potatoes","Bulvės",77,2,17,0.1,"",2000,"2 kg maišas",1.99,"Daržovės ir vaisiai"],
+  chicken:   ["Chicken breast","Vištienos krūtinėlė",120,23,0,2.6,"m",1000,"1 kg",6.49,"Mėsa ir žuvis"],
+  pork:      ["Pork tenderloin","Kiaulienos išpjova",143,21,0,6,"m",500,"500 g",4.39,"Mėsa ir žuvis"],
+  beef:      ["Minced beef","Malta jautiena",250,17,0,20,"m",500,"500 g",4.99,"Mėsa ir žuvis"],
+  salmon:    ["Salmon fillet","Lašišos filė",208,20,0,13,"f",300,"300 g",5.99,"Mėsa ir žuvis"],
+  herring:   ["Herring fillet","Silkės filė",158,18,0,9,"f",250,"250 g",2.29,"Mėsa ir žuvis"],
+  cod:       ["Cod fillet, frozen","Menkės filė",82,18,0,0.7,"f",400,"400 g",4.49,"Mėsa ir žuvis"],
+  tuna:      ["Tuna in water","Tunas savo sultyse",116,26,0,1,"f",120,"skardinė (120 g be skysčio)",1.79,"Bakalėja"],
+  eggs:      ["Eggs","Kiaušiniai",143,13,0.7,10,"e",600,"10 vnt.",2.49,"Pieno produktai ir kiaušiniai",60],
+  curd:      ["Curd cheese 9%","Varškė 9 %",159,16.7,2,9,"d",250,"250 g",1.39,"Pieno produktai ir kiaušiniai"],
+  kefir:     ["Kefir 2.5%","Kefyras 2,5 %",53,3,4,2.5,"d",1000,"1 l",1.19,"Pieno produktai ir kiaušiniai"],
+  yogurt:    ["Greek yogurt 2%","Graikiškas jogurtas 2 %",73,10,4,2,"d",400,"400 g",1.89,"Pieno produktai ir kiaušiniai"],
+  milk:      ["Milk 2.5%","Pienas 2,5 %",52,3.2,4.8,2.5,"d",1000,"1 l",1.09,"Pieno produktai ir kiaušiniai"],
+  cheese:    ["Semi-hard cheese","Fermentinis sūris",350,26,0,27,"d",250,"250 g",2.99,"Pieno produktai ir kiaušiniai"],
+  butter:    ["Butter","Sviestas",740,0.6,0.7,82,"d",200,"200 g",2.69,"Pieno produktai ir kiaušiniai"],
+  sourcream: ["Sour cream 20%","Grietinė 20 %",205,2.5,3.5,20,"d",400,"400 g",1.59,"Pieno produktai ir kiaušiniai"],
+  tofu:      ["Tofu","Tofu",144,15,3,8,"s",400,"400 g",2.49,"Pieno produktai ir kiaušiniai"],
+  chickpeas: ["Chickpeas, canned","Avinžirniai",139,7,22,2.6,"",240,"skardinė (240 g be skysčio)",0.99,"Bakalėja"],
+  lentils:   ["Red lentils","Raudonieji lęšiai",350,24,60,1.5,"",500,"500 g",1.89,"Bakalėja"],
+  beans:     ["Kidney beans, canned","Raudonosios pupelės",100,7,15,0.5,"",240,"skardinė (240 g be skysčio)",0.89,"Bakalėja"],
+  olive:     ["Olive oil","Alyvuogių aliejus",884,0,0,100,"",460,"500 ml",6.49,"Bakalėja"],
+  rapeseed:  ["Rapeseed oil","Rapsų aliejus",884,0,0,100,"",920,"1 l",2.49,"Bakalėja"],
+  walnuts:   ["Walnuts","Graikiniai riešutai",654,15,14,65,"n",200,"200 g",3.49,"Bakalėja"],
+  seeds:     ["Sunflower seeds","Saulėgrąžos",584,21,20,51,"",200,"200 g",0.99,"Bakalėja"],
+  pb:        ["Peanut butter","Žemės riešutų sviestas",588,25,20,50,"n",350,"350 g stiklainis",2.99,"Bakalėja"],
+  honey:     ["Honey","Medus",304,0.3,82,0,"h",500,"500 g",4.49,"Bakalėja"],
+  hummus:    ["Hummus","Humusas",166,8,14,10,"",200,"200 g",1.69,"Pieno produktai ir kiaušiniai"],
+  banana:    ["Bananas","Bananai",89,1.1,23,0.3,"",1000,"1 kg",1.29,"Daržovės ir vaisiai",120],
+  apple:     ["Apples","Obuoliai",52,0.3,14,0.2,"",1000,"1 kg",1.19,"Daržovės ir vaisiai",150],
+  berries:   ["Mixed berries, frozen","Šaldytos uogos",50,0.7,12,0.3,"",450,"450 g",2.49,"Daržovės ir vaisiai"],
+  carrot:    ["Carrots","Morkos",41,0.9,10,0.2,"",1000,"1 kg",0.79,"Daržovės ir vaisiai"],
+  beet:      ["Beetroot","Burokėliai",43,1.6,10,0.2,"",1000,"1 kg",0.69,"Daržovės ir vaisiai"],
+  cabbage:   ["White cabbage","Baltagūžis kopūstas",25,1.3,6,0.1,"",1500,"1 galva (~1,5 kg)",0.89,"Daržovės ir vaisiai"],
+  tomato:    ["Tomatoes","Pomidorai",18,0.9,3.9,0.2,"",500,"500 g",1.99,"Daržovės ir vaisiai"],
+  cucumber:  ["Cucumbers","Agurkai",15,0.7,3.6,0.1,"",400,"400 g",1.29,"Daržovės ir vaisiai"],
+  onion:     ["Onions","Svogūnai",40,1.1,9,0.1,"",1000,"1 kg",0.79,"Daržovės ir vaisiai"],
+  pepper:    ["Bell peppers","Paprikos",31,1,6,0.3,"",500,"500 g",2.49,"Daržovės ir vaisiai"],
+  mushroom:  ["Mushrooms","Pievagrybiai",22,3.1,3.3,0.3,"",400,"400 g",1.99,"Daržovės ir vaisiai"],
+  broccoli:  ["Broccoli, frozen","Šaldyti brokoliai",34,2.8,7,0.4,"",400,"400 g",1.49,"Daržovės ir vaisiai"],
+  spinach:   ["Spinach, frozen","Šaldyti špinatai",23,2.9,3.6,0.4,"",400,"400 g",1.49,"Daržovės ir vaisiai"],
+  mixveg:    ["Vegetable mix, frozen","Šaldytų daržovių mišinys",65,3,11,0.5,"",450,"450 g",1.29,"Daržovės ir vaisiai"],
+};
+
+// ---------- Recipes (grams per one base serving) ----------
+const R = [
+  // pusryčiai
+  {id:"b1",t:"b",n:"Avižinė košė su uogomis ir graikiniais riešutais",min:10,i:[["oats",60],["milk",200],["berries",80],["walnuts",15],["honey",10]],
+   s:["Puode užvirinkite pieną ir suberkite avižinius dribsnius.","Virkite ant silpnos ugnies 4–5 min., vis pamaišydami.","Įdėkite šaldytų uogų ir pakaitinkite dar minutę.","Patiekite apibarstę smulkintais riešutais ir apšlakstę medumi."]},
+  {id:"b2",t:"b",n:"Varškė su uogomis ir saulėgrąžomis",min:5,i:[["curd",200],["berries",100],["honey",15],["seeds",10]],
+   s:["Uogas atšildykite arba trumpai pašildykite mikrobangų krosnelėje.","Varškę sumaišykite su medumi.","Sudėkite uogas ir pabarstykite saulėgrąžomis."]},
+  {id:"b3",t:"b",n:"Kiaušinienė ant ruginės duonos",min:10,i:[["eggs",120],["rye",70],["tomato",100],["butter",5]],
+   s:["Kiaušinius išplakite su žiupsneliu druskos.","Keptuvėje ištirpinkite sviestą, supilkite kiaušinius ir kepkite ant vidutinės ugnies, mentele maišydami, kol sutirštės.","Duoną paskrudinkite, pomidorus supjaustykite.","Patiekite kiaušinienę ant duonos su pomidorais."]},
+  {id:"b4",t:"b",n:"Grikiai su kefyru ir obuoliu",min:20,i:[["buckwheat",60],["kefir",250],["apple",100]],
+   s:["Grikius perplaukite ir virkite pasūdytame vandenyje (1 dalis grikių ir 2 dalys vandens) apie 15 min.","Leiskite atvėsti. Patogu išsivirti iš vakaro.","Obuolį supjaustykite kubeliais.","Grikius užpilkite kefyru ir apibarstykite obuoliu."]},
+  {id:"b5",t:"b",n:"Graikiško jogurto dubenėlis",min:5,i:[["yogurt",200],["oats",40],["banana",100],["pb",15]],
+   s:["Į dubenėlį sudėkite jogurtą.","Suberkite avižinius dribsnius ir supjaustytą bananą.","Užpilkite žemės riešutų sviestu."]},
+  {id:"b6",t:"b",n:"Avižinė košė su bananu ir žemės riešutų sviestu",min:10,i:[["oats",70],["banana",100],["pb",20],["berries",80]],
+   s:["Dribsnius užpilkite dvigubu kiekiu vandens ir virkite 4–5 min.","Pusę banano sutrinkite šakute ir įmaišykite į košę, kad būtų saldesnė.","Sudėkite uogas, likusį bananą ir žemės riešutų sviestą."]},
+  {id:"b7",t:"b",n:"Tofu plakinys su rugine duona",min:10,i:[["tofu",150],["spinach",80],["rye",70],["olive",10],["tomato",80]],
+   s:["Tofu sutrupinkite šakute.","Keptuvėje įkaitinkite aliejų ir kepkite tofu 3–4 min. Pagardinkite druska, pipirais ir, jei norite, ciberžole.","Sudėkite špinatus ir kaitinkite, kol suminkštės.","Patiekite su duona ir pomidorais."]},
+  {id:"b8",t:"b",n:"Varškėčiai su grietine",min:20,i:[["curd",200],["eggs",60],["oats",30],["sourcream",30],["rapeseed",8]],
+   s:["Varškę sumaišykite su kiaušiniu, avižiniais dribsniais ir žiupsneliu druskos.","Drėgnomis rankomis suformuokite 4–6 paplotėlius.","Kepkite įkaitintame aliejuje po 3–4 min. iš abiejų pusių, kol paruduos.","Patiekite su grietine."]},
+  {id:"b9",t:"b",n:"Grikių košė su uogomis ir saulėgrąžomis",min:20,i:[["buckwheat",70],["berries",100],["seeds",15],["banana",80]],
+   s:["Grikius virkite vandenyje (1 : 2) apie 15 min.","Įmaišykite šakute sutrintą bananą.","Sudėkite uogas ir pabarstykite saulėgrąžomis."]},
+  // pietūs
+  {id:"l1",t:"l",n:"Vištiena su grikiais ir agurkų salotomis",min:25,i:[["chicken",150],["buckwheat",70],["cucumber",150],["sourcream",30]],
+   s:["Grikius virkite pasūdytame vandenyje (1 : 2) apie 15 min.","Vištienos krūtinėlę pagardinkite druska ir pipirais, kepkite neprideginančioje keptuvėje po 5–6 min. iš abiejų pusių.","Agurkus supjaustykite griežinėliais ir sumaišykite su grietine, druska ir krapais.","Patiekite vištieną su grikiais ir salotomis."]},
+  {id:"l2",t:"l",n:"Raudonųjų lęšių sriuba su rugine duona",min:30,i:[["lentils",70],["carrot",80],["onion",50],["tomato",100],["olive",10],["rye",50]],
+   s:["Aliejuje 5 min. pakepinkite smulkintą svogūną ir tarkuotą morką.","Suberkite perplautus lęšius, sudėkite pjaustytus pomidorus ir užpilkite 3 kartus didesniu kiekiu vandens.","Virkite 15–20 min., kol lęšiai suirs. Pagardinkite druska, pipirais ir kmynais.","Jei norite, sutrinkite trintuvu. Patiekite su duona."]},
+  {id:"l3",t:"l",n:"Tuno suktinukai",min:10,i:[["tortilla",120],["tuna",120],["cucumber",80],["tomato",80],["yogurt",50]],
+   s:["Tuną nusunkite ir sumaišykite su jogurtu, druska ir pipirais.","Agurką ir pomidorą supjaustykite juostelėmis.","Ant tortilijų paskleiskite tuno masę, sudėkite daržoves ir susukite."]},
+  {id:"l4",t:"l",n:"Šaltibarščiai su karštomis bulvėmis",min:50,i:[["beet",150],["kefir",300],["cucumber",80],["eggs",60],["potato",200]],
+   s:["Burokėlius išvirkite (apie 40 min.) arba naudokite jau virtus. Atvėsinkite ir sutarkuokite.","Kiaušinį virkite 10 min., atvėsinkite ir supjaustykite.","Agurką supjaustykite šiaudeliais, sumaišykite su burokėliais ir kefyru, pasūdykite ir įberkite krapų.","Bulves išvirkite ir patiekite karštas atskirai prie šaltos sriubos."]},
+  {id:"l5",t:"l",n:"Avinžirnių ir paprikų dubenėlis su ryžiais",min:25,i:[["chickpeas",200],["rice",70],["pepper",100],["spinach",60],["olive",10]],
+   s:["Ryžius išvirkite pagal nurodymus ant pakuotės.","Keptuvėje įkaitinkite aliejų ir 4–5 min. kepkite pjaustytas paprikas.","Sudėkite nusunktus avinžirnius ir špinatus, kaitinkite dar 3 min. Pagardinkite česnaku, malta paprika ir druska.","Patiekite ant ryžių."]},
+  {id:"l6",t:"l",n:"Jautienos ir kopūstų troškinys su bulvėmis",min:45,i:[["beef",130],["cabbage",250],["carrot",80],["onion",50],["potato",200],["rapeseed",8]],
+   s:["Puode įkaitinkite aliejų ir apkepkite maltą jautieną su smulkintu svogūnu.","Sudėkite tarkuotą morką ir supjaustytą kopūstą, pasūdykite.","Įpilkite stiklinę vandens, uždenkite ir troškinkite 25–30 min.","Tuo metu išvirkite bulves ir patiekite kartu."]},
+  {id:"l7",t:"l",n:"Makaronai su vištiena ir brokoliais",min:20,i:[["pasta",80],["chicken",130],["broccoli",150],["cheese",20],["olive",8]],
+   s:["Makaronus virkite pasūdytame vandenyje. Likus 4 min. įmeskite brokolius.","Vištieną supjaustykite gabalėliais ir 6–7 min. apkepkite aliejuje.","Nusunkite makaronus su brokoliais ir sumaišykite su vištiena.","Patiekite apibarstę tarkuotu sūriu."]},
+  {id:"l8",t:"l",n:"Pupelių ir pomidorų sriuba su rugine duona",min:25,i:[["beans",200],["tomato",150],["onion",50],["carrot",60],["rapeseed",8],["rye",60]],
+   s:["Aliejuje pakepinkite svogūną ir tarkuotą morką.","Sudėkite pjaustytus pomidorus ir nusunktas pupeles, užpilkite vandeniu.","Virkite 15 min., pagardinkite druska, pipirais ir raudonėliu.","Patiekite su duona."]},
+  {id:"l9",t:"l",n:"Silkė su bulvėmis ir svogūnais",min:25,i:[["herring",120],["potato",250],["onion",40],["sourcream",30]],
+   s:["Bulves išvirkite su lupenomis arba nuluptas.","Silkę supjaustykite gabalėliais, svogūną žiedais.","Patiekite silkę su svogūnais, karštomis bulvėmis ir grietine."]},
+  // vakarienė
+  {id:"d1",t:"d",n:"Kepta lašiša su bulvėmis ir brokoliais",min:35,i:[["salmon",150],["potato",250],["broccoli",150],["olive",8]],
+   s:["Įkaitinkite orkaitę iki 200 °C.","Bulves supjaustykite skiltelėmis, sumaišykite su puse aliejaus ir druska, kepkite 15 min.","Sudėkite lašišą ir brokolius, apšlakstykite likusiu aliejumi ir kepkite dar 12–15 min.","Patiekite su citrinos skiltele."]},
+  {id:"d2",t:"d",n:"Kiaulienos išpjova su grikiais ir morkomis",min:30,i:[["pork",150],["buckwheat",60],["carrot",150],["rapeseed",8]],
+   s:["Grikius išvirkite (1 : 2), apie 15 min.","Išpjovą supjaustykite 2 cm storio medalionais ir pagardinkite.","Kepkite įkaitintame aliejuje po 3–4 min. iš abiejų pusių.","Morkas supjaustykite lazdelėmis ir 5 min. apkepkite toje pačioje keptuvėje."]},
+  {id:"d3",t:"d",n:"Menkė su ryžiais ir daržovėmis",min:25,i:[["cod",180],["rice",70],["mixveg",200],["butter",8]],
+   s:["Ryžius išvirkite.","Menkę atšildykite, pasūdykite ir kepkite svieste po 3–4 min. iš abiejų pusių.","Šaldytas daržoves 6–8 min. troškinkite keptuvėje su trupučiu vandens.","Patiekite kartu."]},
+  {id:"d4",t:"d",n:"Tofu ir daržovių keptinis su ryžiais",min:25,i:[["tofu",180],["rice",70],["pepper",100],["broccoli",120],["rapeseed",10]],
+   s:["Ryžius išvirkite.","Tofu supjaustykite kubeliais ir apkepkite aliejuje, kol paruduos.","Sudėkite paprikas ir brokolius, kepkite 5–6 min.","Pagardinkite česnaku ir druska, patiekite su ryžiais."]},
+  {id:"d5",t:"d",n:"Omletas su pievagrybiais ir salotomis",min:15,i:[["eggs",180],["mushroom",150],["cheese",25],["tomato",120],["cucumber",100],["butter",5]],
+   s:["Pievagrybius supjaustykite ir 4–5 min. apkepkite svieste.","Kiaušinius išplakite su druska ir užpilkite ant grybų.","Pabarstykite tarkuotu sūriu, uždenkite ir kepkite ant silpnos ugnies 4–5 min.","Patiekite su pomidorų ir agurkų salotomis."]},
+  {id:"d6",t:"d",n:"Orkaitėje kepta vištiena su bulvėmis ir kopūstų salotomis",min:45,i:[["chicken",160],["potato",250],["cabbage",150],["carrot",60],["rapeseed",12]],
+   s:["Įkaitinkite orkaitę iki 200 °C.","Bulves ir vištieną supjaustykite, sumaišykite su puse aliejaus, druska ir prieskoniais.","Kepkite 30–35 min., kol bulvės suminkštės.","Kopūstą smulkiai supjaustykite, sumaišykite su tarkuota morka, likusiu aliejumi, druska ir šlakeliu acto."]},
+  {id:"d7",t:"d",n:"Lęšių ir daržovių troškinys su ryžiais",min:30,i:[["lentils",70],["mixveg",200],["onion",50],["rice",50],["rapeseed",10]],
+   s:["Ryžius išvirkite.","Aliejuje pakepinkite svogūną ir įberkite kario prieskonių.","Suberkite lęšius ir daržoves, užpilkite vandeniu, kad apsemtų, ir troškinkite 15–20 min.","Patiekite su ryžiais."]},
+  {id:"d8",t:"d",n:"Jautienos ir pupelių čili su ryžiais",min:35,i:[["beef",120],["beans",150],["tomato",150],["pepper",80],["onion",50],["rice",60]],
+   s:["Ryžius išvirkite.","Keptuvėje apkepkite maltą jautieną su svogūnu ir paprika.","Sudėkite pomidorus ir pupeles, įberkite čili, kmynų ir druskos. Troškinkite 15 min.","Patiekite su ryžiais."]},
+  {id:"d9",t:"d",n:"Makaronai su avinžirniais ir špinatais",min:20,i:[["pasta",80],["chickpeas",150],["spinach",100],["tomato",100],["olive",10]],
+   s:["Makaronus išvirkite pasūdytame vandenyje.","Aliejuje pakepinkite česnaką, sudėkite pomidorus ir špinatus, troškinkite 5 min.","Įmaišykite avinžirnius ir makaronus, pagardinkite druska ir pipirais."]},
+  // užkandžiai
+  {id:"s1",t:"s",n:"Obuolys su graikiniais riešutais",min:2,i:[["apple",150],["walnuts",20]],s:["Obuolį supjaustykite skiltelėmis ir valgykite su riešutais."]},
+  {id:"s2",t:"s",n:"Kefyras su bananu",min:3,i:[["kefir",250],["banana",100]],s:["Kefyrą ir bananą sutrinkite trintuvu į kokteilį arba valgykite atskirai."]},
+  {id:"s3",t:"s",n:"Humusas su morkomis ir agurku",min:5,i:[["hummus",60],["carrot",120],["cucumber",80]],s:["Morkas ir agurką supjaustykite lazdelėmis.","Valgykite padažę į humusą."]},
+  {id:"s4",t:"s",n:"Graikiškas jogurtas su medumi",min:1,i:[["yogurt",150],["honey",10]],s:["Jogurtą apšlakstykite medumi."]},
+  {id:"s5",t:"s",n:"Ruginė duona su sūriu ir agurku",min:3,i:[["rye",50],["cheese",25],["cucumber",60]],s:["Ant duonos riekės sudėkite sūrio ir agurko griežinėlių."]},
+  {id:"s6",t:"s",n:"Bananas su žemės riešutų sviestu",min:2,i:[["banana",120],["pb",15]],s:["Bananą supjaustykite ir patepkite žemės riešutų sviestu."]},
+  {id:"s7",t:"s",n:"Varškė su uogomis",min:3,i:[["curd",120],["berries",60]],s:["Varškę sumaišykite su atšildytomis uogomis."]},
+  {id:"s8",t:"s",n:"Obuolys su saulėgrąžomis",min:2,i:[["apple",150],["seeds",20]],s:["Obuolį supjaustykite ir valgykite su saulėgrąžomis."]},
+];
+R.forEach(r => { r.flags = new Set(r.i.flatMap(([k]) => I[k][6].split("").filter(Boolean))); r.base = nutr(r, 1); });
+
+// Real shelf prices collected from the stores' online shops (Barbora = Maxima, Rimi e-shop).
+// Per ingredient: up to 8 matching products [name, price €, pack grams, URL]; the app buys whichever costs least for the amount needed.
+const PRICES = {"date":"2026-11-05","maxima":{"oats":[["Visų grūdo dalių avižiniai dribsniai DOBELE, 500 g",0.79,500,"https://barbora.lt/produktai/visu-grudo-daliu-aviziniai-dribsniai-dobele-500-g"],["Avižiniai dribsniai DOBELES, 400 g",0.69,399,"https://barbora.lt/produktai/aviziniai-dribsniai-dobeles-400-g"],["Avižiniai dribsniai GALINTA, 500 g",0.89,500,"https://barbora.lt/produktai/aviziniai-dribsniai-galinta-500-g"],["Visų grūdo dalių avižiniai dribsniai MALSENA, 1500 g",2.99,1503,"https://barbora.lt/produktai/visu-grudo-daliu-aviziniai-dribsniai-malsena-1500-g"],["Pilno grūdo avižų dribsniai DOBELE, 500 g",1.09,500,"https://barbora.lt/produktai/pilno-grudo-avizu-dribsniai-dobele-500-g"],["Visų grūdo dalių avižiniai dribsniai WELL DONE, 500 g",1.15,500,"https://barbora.lt/produktai/visu-grudo-daliu-aviziniai-dribsniai-well-done-500-g"],["Ekologiški visų grūdų dalių avižiniai dribsniai DOBELE, 500 g",1.39,500,"https://barbora.lt/produktai/visu-grudu-daliu-aviziniai-dribsniai-dobele-500-g"],["Avižiniai dribsniai LINKĖJIMAI IŠ KAIMO, 500 g",1.39,500,"https://barbora.lt/produktai/aviziniai-dribsniai-linkejimai-is-kaimo-500-g"]],"buckwheat":[["Grikiai EXTRA LINE, 800 g",1.29,801,"https://barbora.lt/produktai/grikiai-extra-line-800-g-800-g"],["Grikiai WELL DONE, 800 g",1.51,799,"https://barbora.lt/produktai/grikiai-well-done-800-g"],["Grikių kruopos EKOFRISA, 800 g",1.69,801,"https://barbora.lt/produktai/grikiu-kruopos-ekofrisa-800-g"],["Grikių kruopos BIORINA, 800 g",1.89,801,"https://barbora.lt/produktai/grikiu-kruopos-biorina-800-g"],["Grikių kruopos GALINTA, 800 g",1.99,799,"https://barbora.lt/produktai/grikiu-kruopos-galinta-800-g"],["Grikiai WELL DONE, 400 g",1.06,400,"https://barbora.lt/produktai/grikiai-well-done-400-g"],["Grikių kruopos SKANĖJA, 800 g",2.19,799,"https://barbora.lt/produktai/grikiu-kruopos-skaneja-800-g"],["Grikių kruopos BIORINA, 400 g",1.15,399,"https://barbora.lt/produktai/grikiu-kruopos-biorina-400-g"]],"rice":[["Plikyti ryžiai EXTRA LINE, 800 g",0.99,798,"https://barbora.lt/produktai/plikyti-ryziai-extra-line-800-g"],["Ilgagrūdžiai ryžiai WELL DONE, 800 g",1.29,801,"https://barbora.lt/produktai/ilgagrudziai-ryziai-well-done-800-g"],["Ilgagrūdžiai ryžiai GRALLA, 800 g",1.29,801,"https://barbora.lt/produktai/ilgagrudziai-ryziai-gralla-800-g"],["Ilgagrūdžiai plikyti ryžiai GRALLA PREMIUM, 800 g",1.39,799,"https://barbora.lt/produktai/ilgagrudziai-plikyti-ryziai-gralla-premium-800-g"],["Plikyti ryžiai WELL DONE, 800 g",1.59,799,"https://barbora.lt/produktai/plikyti-ryziai-well-done-800-g"],["Ryžiai DELICAT, 800 g",1.65,801,"https://barbora.lt/produktai/ryziai-delicat-800-g"],["TAILANDO ryžiai SKANĖJA, 800 g",1.69,801,"https://barbora.lt/produktai/tailando-ryziai-skaneja-800-g"],["Ilgagrūdžiai SVEIKUOLIŲ ryžiai (4x100 g) GALINTA, 400 g",0.85,399,"https://barbora.lt/produktai/ilgagrudziai-sveikuoliu-ryziai-4-x-100-g-galinta-400-g"]],"pasta":[["Visų grūdo dalių makaronai (sraigteliai) WELL DONE, 500 g",0.89,500,"https://barbora.lt/produktai/visu-grudo-daliu-makaronai-sraigteliai-well-done-500-g"],["GINTARINIAI visų grūdo dalių makaronai (sraigteliai), 400 g",0.95,399,"https://barbora.lt/produktai/gintariniai-visu-grudo-daliu-makaronai-sraigteliai-400-g"],["GINTARINIAI visų grūdo dalių makaronai (vamzdeliai), 400 g",0.95,399,"https://barbora.lt/produktai/gintariniai-visu-grudo-daliu-makaronai-vamzdeliai-400-g"],["Visų grūdo dalių makaronai LA MOLISANA, vamzdeliai, 500 g",1.49,500,"https://barbora.lt/produktai/visu-grudo-daliu-makaronai-la-molisana-vamzdeliai-500-g"],["Visų grūdo dalių makaronai LA MOLISANA, spagečiai, 500 g",1.49,500,"https://barbora.lt/produktai/visu-grudo-daliu-makaronai-la-molisana-spageciai-500-g"],["Pilno grūdo makaronai LA MOLISANA MEZZI RIGATONI Nr. 32, 500 g",1.49,500,"https://barbora.lt/produktai/pilno-grudo-makaronai-la-molisana-mezzi-rigatoni-nr-32-500-g"],["Pilno grūdo makaronai BARILLA FUSILLI, 500 g",1.59,500,"https://barbora.lt/produktai/pilno-grudo-makaronai-barilla-fusilli-500-g"],["Pilno grūdo makaronai BARILLA PENNE RIGATE, 500 g",1.59,500,"https://barbora.lt/produktai/pilno-grudo-makaronai-barilla-penne-rigate-500-g"]],"rye":[["Šviesi ruginė raikyta AGOTOS duona su saulėgrąžomis, 700 g",1.39,698,"https://barbora.lt/produktai/sviesi-rugine-raikyta-agotos-duona-su-saulegrazomis-700-g"],["Šviesi ruginė raikyta PALANGOS duona, 700 g",1.55,701,"https://barbora.lt/produktai/sviesi-rugine-raikyta-palangos-duona-700-g"],["SENOLIŲ ruginė duona, 500 g",1.19,500,"https://barbora.lt/produktai/senoliu-rugine-duona-500-g"],["Visų grūdo dalių ruginė duona, 800 g, 800 g",1.95,799,"https://barbora.lt/produktai/visu-grudo-daliu-rugine-duona-800-g-800-g"],["MOČIUTĖS ruginė duona su raugu, 700 g",1.79,699,"https://barbora.lt/produktai/mociutes-rugine-duona-su-raugu-700-g"],["Tikra ruginė duona su saulėgrąžomis, 730 g",2.09,731,"https://barbora.lt/produktai/tikra-rugine-duona-su-saulegrazomis-730-g"],["Juoda ruginė raikyta AGOTOS duona, 375 g",1.19,375,"https://barbora.lt/produktai/juoda-rugine-raikyta-agotos-duona-375-g"],["Šviesi ruginė MOČIUTĖS duona, 450 g",1.45,450,"https://barbora.lt/produktai/sviesi-rugine-mociutes-duona-450-g"]],"tortilla":[["Tortilijos WELL DONE, 8 vnt., 320 g",1.59,320,"https://barbora.lt/produktai/tortilijos-well-done-8-vnt-320-g"],["Tortilijos WELL DONE, 6 vnt., 370 g",1.99,370,"https://barbora.lt/produktai/tortilijos-well-done-6-vnt-370-g"],["Kvietinės tortilijos LIETUVOS KEPĖJAS, 6 vnt., 360 g",1.99,360,"https://barbora.lt/produktai/kvietines-tortilijos-lietuvos-kepejas-6-vnt-360-g"],["Tortilijos LIETUVOS KEPĖJAS su sėklomis, 6 vnt., 360 g",1.99,360,"https://barbora.lt/produktai/tortilijos-lietuvos-kepejas-su-seklomis-6-vnt-360-g"],["Tortilijos DIJO TORTILLA FRESH WRAPS ORIGINAL, 312.5 g",1.79,312,"https://barbora.lt/produktai/tortilijos-dijo-tortilla-fresh-wraps-original-312-5-g"],["Visų grūdo dalių miltų tortilijos WELL DONE, 370 g",2.19,370,"https://barbora.lt/produktai/visu-grudo-daliu-miltu-tortilijos-well-done-370-g"],["Kvietinės tortilijos OLD EL PASO, 326 g",1.99,326,"https://barbora.lt/produktai/kvietines-tortilijos-old-el-paso-326-g"],["Kvietinės tortilijos OLD EL PASO, 350 g",2.29,350,"https://barbora.lt/produktai/kvietines-tortilijos-old-el-paso-350-g"]],"potato":[["Lietuviškos šviežios bulvės, 40-60 mm, 1 kg",0.39,1000,"https://barbora.lt/produktai/lietuviskos-bulves-40-60-mm-1-kg-63123"],["Plautos bulvės LINKĖJIMAI IŠ KAIMO, 50-70 mm, 1 kg",0.79,1000,"https://barbora.lt/produktai/plautos-bulves-linkejimai-is-kaimo-50-70-mm-1-kg"],["Bulvės LINKĖJIMAI IŠ KAIMO, 50-70 mm, 1 kg",0.89,1000,"https://barbora.lt/produktai/bulves-linkejimai-is-kaimo-50-70-mm-1-kg"],["Bulvių tarkiai, 900 g",1.69,899,"https://barbora.lt/produktai/bulviu-tarkiai-900-g"],["Bulvių didžkukulių tešla, 1000 g",1.89,1000,"https://barbora.lt/produktai/bulviu-didzkukuliu-tesla-1000-g"],["Bulvių skiltelės su prieskoniais WELL DONE, 750 g",2.19,750,"https://barbora.lt/produktai/bulviu-skilteles-su-prieskoniais-well-done-750-g-750-g"],["Balandėlis su bulvių koše, 400 g",2.59,400,"https://barbora.lt/produktai/balandelis-su-bulviu-kose-400-g"],["Bulvių prieskoniai SANTA MARIA, 57 g",1.39,57,"https://barbora.lt/produktai/bulviu-prieskoniai-santa-maria-57-g"]],"chicken":[["Lietuviška šviežia viščiukų broilerių filė WELL DONE, 500 g",3.49,500,"https://barbora.lt/produktai/lietuviska-sviezia-visciuku-broileriu-file-well-done-500-g"],["Šviežia viščiukų broilerių filė, užaugintų be antibiotikų, 500 g",3.49,500,"https://barbora.lt/produktai/sviezia-visciuku-broileriu-file-uzaugintu-be-antibiotiku-500-g"],["Šviežia viščiukų broilerių filė be antibiotikų WELL DONE, 500 g",4.29,500,"https://barbora.lt/produktai/sviez-visciuku-broileriu-file-well-done-uzaug-be-antib-500-g"]],"pork":[["LIETUVIŠKA kiaulienos išpjova, atšaldyta, 1 kg",5.99,1000,"https://barbora.lt/produktai/lietuviska-kiaulienos-ispjova-atsaldyta-1-kg"],["Kiaulienos išpjova WELL DONE, 1 kg",6.29,1000,"https://barbora.lt/produktai/sviezia-kiaulienos-ispjova-well-done-kg-1-kg"],["Lietuviška kiaulienos išpjova, atšaldyta, be antibiotikų, 1 kg",6.49,1000,"https://barbora.lt/produktai/atvesinta-kiaulienos-ispjova-uzauginta-be-antibiotiku-1-kg"]],"beef":[["Šviežia smulkinta jautiena, riebumas ne didesnis kaip 15 %, 1 kg",8.45,1000,"https://barbora.lt/produktai/sviezia-smulkinta-jautiena-riebumas-ne-didesnis-kaip-15-proc-1-kg"],["Jautienos faršas GRYNUOLIAI, 400 g",3.49,400,"https://barbora.lt/produktai/jautienos-farsas-grynuoliai-400-g"],["Šviežia smulkinta jautiena, riebumas ne didesnis kaip 10 %, 1 kg",8.99,1000,"https://barbora.lt/produktai/sviezia-smulkinta-jautiena-riebumas-ne-didesnis-kaip-10-proc-1-kg-02193"],["Smulkinta jautiena WELL DONE, rieb. ne did. nei 15 %, 400 g",4.45,400,"https://barbora.lt/produktai/sviezia-smulkinta-jautiena-well-done-rieb-ne-daugiau-15-proc-400-g"]],"salmon":[["Šviežia atlantinių lašišų filė su oda, 1 kg",13.99,1000,"https://barbora.lt/produktai/sviezia-atlantiniu-lasisu-file-su-oda-1-kg"],["Šaldyta atlantinių lašišų filė NOWACO su oda, 250 g",5.99,250,"https://barbora.lt/produktai/saldyta-atlantiniu-lasisu-file-nowaco-su-oda-250-g"],["Šviežia atlantinės lašišos (lot. Salmo Salar) filė su oda, 250 g",6.49,250,"https://barbora.lt/produktai/sviezia-atlantines-lasisos-lot-salmo-salar-file-su-oda-250-g"]],"herring":[["Sūdyta silkės filė aliejuje WIDE OCEAN, 220 g",0.99,220,"https://barbora.lt/produktai/sudyta-silkes-file-aliejuje-wide-ocean-220-g"],["TRADICINĖ sūdyta silkių filė su aliejumi EDEGA, 1 kg",5.19,1000,"https://barbora.lt/produktai/tradicine-sudyta-silkiu-file-su-aliejumi-edega-1-kg"],["Silpnai sūdyta MOČIUTĖS silkių filė, 600 g",3.19,600,"https://barbora.lt/produktai/silpnai-sudyta-mociutes-silkiu-file-600-g"],["Sūdyta silkių filė su oda, 1 kg",5.39,1000,"https://barbora.lt/produktai/sudyta-silkiu-file-su-oda-1-kg"],["SKANDINAVIŠKA silkių filė, 1 kg",6.49,1000,"https://barbora.lt/produktai/skandinaviska-silkiu-file-1-kg"],["Sūdyta silkių filė WELL DONE su prieskoniais aliejuje, 450 g",2.99,450,"https://barbora.lt/produktai/sudyta-silkiu-file-well-done-su-prieskoniais-aliejuje-450-g"],["Sūdyta silkių filė WELL DONE aliejuje, 450 g",2.99,450,"https://barbora.lt/produktai/sudyta-silkiu-file-well-done-aliejuje-450-g"],["SKANDINAVIŠKA silkių filė EDEGA, 500 g",3.49,500,"https://barbora.lt/produktai/skandinaviska-silkiu-file-edega-500-g"]],"cod":[["Šald. glaz. aliaskinių rudagalvių menkių filė NOWACO be odos, 490 g",2.99,490,"https://barbora.lt/produktai/sald-glaz-aliaskiniu-rudagalviu-menkiu-file-nowaco-be-odos-490-g"],["Aliaskinių menkių filė WELL DONE, 475 g",2.99,475,"https://barbora.lt/produktai/saldyta-alaskiniu-menkiu-file-well-done-475-g"],["Šaldyta rudagalvių menkių filė FINDUS su citrinom. ir žolel., 250 g",3.19,250,"https://barbora.lt/produktai/saldyta-rudagalviu-menkiu-file-findus-su-citrinom-ir-zolel-250-g"],["Atšild. ledjūr. menkės filė WELL DONE(lot.Pollachius virens), 250 g",4.99,250,"https://barbora.lt/produktai/atsild-ledjur-menkes-file-well-done-lot-pollachius-virens-250-g"]],"tuna":[["Smulkinti tunai WIDE OCEAN savo sultyse, 185 g",1.05,111,"https://barbora.lt/produktai/smulkinti-tunai-wide-ocean-savo-sultyse-185-g"],["Tunų gabaliukai WIDW OCEAN savo sultyse, 185 g",1.65,111,"https://barbora.lt/produktai/tunu-gabaliukai-widw-ocean-savo-sultyse-185-g"],["Gelsvauodegių tunų gabaliukai savo sultyse WELL DONE, 185 g",2.69,111,"https://barbora.lt/produktai/gelsvauodegiu-tunu-gabaliukai-savo-sultyse-well-done-185-g"],["Gelsvauodegių tunų gabaliukai savo sultyse WELL DONE, 240 g",3.69,144,"https://barbora.lt/produktai/gelsvauodegiu-tunu-gabaliukai-savo-sultyse-well-done-240-g"],["Tunų gabaliukai SUN&SEA savo sultyse, 160 g",2.49,96,"https://barbora.lt/produktai/tunu-gabaliukai-sun-sea-savo-sultyse-160-g"],["Tunų pjausniai savo sultyse WELL DONE, 185 g",2.89,111,"https://barbora.lt/produktai/tunu-pjausniai-savo-sultyse-well-done-185-g"],["Nesmulkinti tunai CALVO savo sultyse, 240 g",3.89,144,"https://barbora.lt/produktai/nesmulkinti-tunai-calvo-savo-sultyse-240-g"],["Tunų gabaliukai savo sultyse WELL DONE, 240 g",3.99,144,"https://barbora.lt/produktai/tunu-gabaliukai-savo-sultyse-well-done-240-g"]],"eggs":[["Ant kraiko laikomų vištų kiaušiniai, 10 vnt.",2.19,600,"https://barbora.lt/produktai/ant-kraiko-laikomu-vistu-kiausiniai-extra-line-10-vnt-10-vnt"],["Ant kraiko laikomų vištų kiaušiniai WELL DONE, M, 10 vnt.",2.39,600,"https://barbora.lt/produktai/ant-kraiko-laikomu-vistu-kiausiniai-well-done-m-10-vnt-10-vnt"],["Ant kraiko laikomų vištų kiaušiniai WELL DONE, 10 vnt.",2.49,600,"https://barbora.lt/produktai/ant-kraiko-laikomu-vistu-kiausiniai-well-done-10-vnt-10-vnt"],["Ant kraiko laikomų vištų kiaušiniai WELL DONE, L, 10 vnt.",2.69,600,"https://barbora.lt/produktai/ant-kraiko-laikomu-vistu-kiausiniai-well-done-l-10-vnt-10-vnt"],["Ant kraiko laikomų vištų kiaušiniai RIDO, 10 vnt.",2.89,600,"https://barbora.lt/produktai/ant-kraiko-laikomu-vistu-kiausiniai-rido-10-vnt"],["Kiaušiniai RIDO Omega 3, 10 vnt.",2.89,600,"https://barbora.lt/produktai/kiausiniai-rido-omega-3-10-vnt"],["Laisvai laikomų vištų kiaušiniai WELL DONE, 10 vnt.",2.95,600,"https://barbora.lt/produktai/laisvai-laikomu-vistu-kiausiniai-well-done-10-vnt-10-vnt"]],"curd":[["Pusriebė varškė FARM MILK, 9 % rieb., 180 g",0.75,180,"https://barbora.lt/produktai/pusriebe-varske-farm-milk-9-proc-rieb-180-g"],["Varškė WELL DONE 9%, ~1kg",4.99,1000,"https://barbora.lt/produktai/varske-well-done-9-proc-rieb-1-kg"],["ROKIŠKIO NAMINĖ varškė, 9 % rieb., 1 kg",5.99,1000,"https://barbora.lt/produktai/rokiskio-namine-varske-9-proc-rieb-1-kg-20111"],["Varškė WELL DONE, 9 % rieb., 180 g",1.09,180,"https://barbora.lt/produktai/varske-well-done-9-proc-rieb-180-g"],["Ekologiška varškė AUGA, 9 % rieb., 180 g",1.15,180,"https://barbora.lt/produktai/ekologiska-varske-auga-9-proc-rieb-180-g"],["Pusriebė ŽEMAITIJOS varškė, 9 % rieb., 1 kg",6.49,1000,"https://barbora.lt/produktai/pusriebe-zemaitijos-varske-9-proc-rieb-1-kg"],["Varškė WELL DONE, 9 % rieb., 500 g",3.49,500,"https://barbora.lt/produktai/varske-well-done-9-proc-rieb-500-g"],["Varškė ROKIŠKIO TIKRAS, 9 % rieb., 600 g",4.29,600,"https://barbora.lt/produktai/varske-rokiskio-tikras-9-proc-rieb-600-g"]],"kefir":[["Kefyras FARM MILK, 2 % rieb., 1 kg",0.89,1000,"https://barbora.lt/produktai/kefyras-farm-milk-2-proc-rieb-1-kg"],["Kefyras WELL DONE, 2,5 % rieb., 900 g",1.39,903,"https://barbora.lt/produktai/kefyras-well-done-2-5-proc-rieb-900-g"],["ROKIŠKIO NAMINIS kefyras, 2,5 % rieb., 900 g",1.45,901,"https://barbora.lt/produktai/rokiskio-naminis-kefyras-2-5-proc-rieb-900-g-36880"],["Natūralus ŽEMAITIJOS kefyras, 2,5 % rieb., 0.9 kg",1.59,898,"https://barbora.lt/produktai/naturalus-zemaitijos-kefyras-2-5-proc-rieb-0-9-kg"],["DVARO kefyras, 2,5 % rieb., 900 g",1.59,898,"https://barbora.lt/produktai/dvaro-kefyras-2-5-proc-rieb-900-g-60627"],["Kefyras VILVI 2,5% rieb., 1 kg",1.85,1000,"https://barbora.lt/produktai/kefyras-vilvi-2-5-proc-rieb-1-kg"],["DVARO kefyras, 3,2 % rieb., 900 g",1.69,899,"https://barbora.lt/produktai/dvaro-kefyras-3-2-proc-rieb-900-g"],["Natūralus ŽEMAITIJOS kefyras, 3,2 % rieb., 900 g",1.69,899,"https://barbora.lt/produktai/naturalus-zemaitijos-kefyras-3-2-proc-rieb-900-g"]],"yogurt":[["Graikiškas jogurtas ALMA, 4 % rieb., 370 g",1.69,370,"https://barbora.lt/produktai/graikiskas-jogurtas-alma-4-proc-rieb-370-g"],["Natūralus jogurtas GRAIKIŠKA AMFORA, 3,9 % rieb., 370 g",1.79,370,"https://barbora.lt/produktai/naturalus-jogurtas-graikiska-amfora-3-9-proc-rieb-370-g"],["Jogurtas GRAIKIŠKA AMFORA , natūralus,  2,6 % rieb., 250 g",1.29,250,"https://barbora.lt/produktai/naturalus-jogurtas-graikiska-amfora-2-6-proc-rieb-250-g"],["Graikiškas jogurtas ALMA, 4 % rieb., 180 g",1.15,180,"https://barbora.lt/produktai/graikiskas-jogurtas-alma-4-proc-rieb-180-g"],["Natūralus jogurtas GRAIKIŠKA AMFORA,3,9% rieb., 200 g",1.39,200,"https://barbora.lt/produktai/naturalus-graikiskas-jogurtas-graikiska-amfora-3-9-proc-rieb-200-g"],["Jogurtas GRAIKIŠKA AMFORA su figomis, 3,1%rieb., 150 g",1.39,150,"https://barbora.lt/produktai/graikiskas-jogurtas-graikiska-amfora-su-figomis-3-1-proc-rieb-150-g"]],"milk":[["Pasterizuotas pienas WELL DONE, 2,5 % rieb., 2 l",1.99,1990,"https://barbora.lt/produktai/pasterizuotas-pienas-well-done-2-5-proc-rieb-2-l"],["Pienas WELL DONE, 2,5 % rieb., 1 l",1.09,1000,"https://barbora.lt/produktai/pienas-well-done-2-5-proc-rieb-1-l"],["ROKIŠKIO NAMINIS pienas, 2,5 % rieb., 2 l",2.19,1991,"https://barbora.lt/produktai/rokiskio-naminis-pienas-2-5-proc-rieb-2-l"],["ROKIŠKIO NAMINIS pienas, 2,5 % rieb., 1 l",1.19,1000,"https://barbora.lt/produktai/rokiskio-naminis-pienas-2-5-proc-rieb-1-l"],["UAT pienas WELL DONE, 2,5 % rieb., 1 l",1.19,1000,"https://barbora.lt/produktai/uat-pienas-well-done-2-5-proc-rieb-1-l"],["DVARO pienas, 2,5 % rieb., pasterizuotas, 2 l",2.39,1992,"https://barbora.lt/produktai/dvaro-pienas-2-l-2-5-proc-rieb-2-l"],["Pienas DVARO, 2,5 % rieb., pasterizuotas, 1 l",1.39,1000,"https://barbora.lt/produktai/pienas-dvaro-2-5-proc-rieb-1-l"],["Pienas WELL DONE, 2,5 % rieb., 500 ml",0.79,500,"https://barbora.lt/produktai/pienas-well-done-2-5-proc-rieb-500-ml"]],"cheese":[["Tilžės sūris FARM MILK, 45 % rieb. s. m., 250 g",1.49,250,"https://barbora.lt/produktai/tilzes-suris-farm-milk-45-proc-rieb-s-m-250-g"],["Tilžės sūris FARM MILK (riekelės), 45 % rieb. s. m., 500 g",3.99,500,"https://barbora.lt/produktai/tilzes-suris-farm-milk-riekeles-45-proc-rieb-s-m-500-g"],["Fermentinis ROKIŠKIO sūris, 45 % rieb. s. m., 240 g",1.99,240,"https://barbora.lt/produktai/fermentinis-rokiskio-suris-45-proc-rieb-s-m-240-g"],["TILŽĖS sūris WELL DONE, 45 % rieb. s. m., 200 g",1.69,200,"https://barbora.lt/produktai/tilzes-suris-well-done-45-proc-rieb-s-m-200-g"],["Fermentinis ROKIŠKIO NAMINIS sūris, 45 % rieb. s. m., 240 g",2.09,240,"https://barbora.lt/produktai/fermentinis-rokiskio-naminis-suris-45-proc-rieb-s-m-240-g"],["Fermentinis DVARO sūris, 50 % rieb. s. m., 240 g",2.19,240,"https://barbora.lt/produktai/fermentinis-dvaro-suris-50-proc-rieb-s-m-240-g"],["Tilžės sūris FARM MILK (riekelės), 45 % rieb. s. m., 150 g",1.49,150,"https://barbora.lt/produktai/tilzes-suris-farm-milk-riekeles-45-proc-rieb-s-m-150-g"],["ROKIŠKIO NAMINIS sūris, 45 % rieb. s. m., 500 g",4.99,500,"https://barbora.lt/produktai/rokiskio-naminis-suris-45-proc-rieb-s-m-500-g"]],"butter":[["Sviestas SAULĖS PIEVOS, 82 % rieb., 200 g",1.19,200,"https://barbora.lt/produktai/sviestas-saules-pievos-82-proc-rieb-200-g"],["Sviestas WELL DONE, 82 % rieb., 500 g",2.99,500,"https://barbora.lt/produktai/sviestas-well-done-82-proc-rieb-500-g"],["Sviestas WELL DONE, 82 % rieb., 170 g",1.29,170,"https://barbora.lt/produktai/sviestas-well-done-82-proc-rieb-170-g"],["ROKIŠKIO sviestas, 82 % rieb., 200 g",1.59,200,"https://barbora.lt/produktai/rokiskio-sviestas-82-proc-rieb-200-g"],["ROKIŠKIO NAMINIS sviestas, 82 % rieb., 180 g",1.49,180,"https://barbora.lt/produktai/rokiskio-naminis-sviestas-82-proc-rieb-180-g"],["Saldžios grietinėlės ŽEMAITIJOS sviestas, 82 % rieb., 200 g",1.69,200,"https://barbora.lt/produktai/saldzios-grietineles-zemaitijos-sviestas-82-proc-rieb-200-g"],["Sviestas be laktozės WELL DONE, 82 % rieb., 200 g",2.19,200,"https://barbora.lt/produktai/sviestas-be-laktozes-well-done-82-proc-rieb-200-g"],["Saldžios grietinėlės DVARO sviestas, 82 % rieb., 200 g",2.29,200,"https://barbora.lt/produktai/saldzios-grietineles-dvaro-sviestas-82-proc-rieb-200-g"]],"sourcream":[["Grietinė FARM MILK, 18 % rieb., 400 g",1.25,399,"https://barbora.lt/produktai/grietine-farm-milk-18-proc-rieb-400-g"]],"tofu":[["Sojų gaminys TOFU MORI-NU, 307 g",3.69,307,"https://barbora.lt/produktai/soju-gaminys-tofu-mori-nu-307-g"]],"chickpeas":[["Avinžirniai GRALLA, 400 g",0.99,240,"https://barbora.lt/produktai/avinzirniai-gralla-400-g"],["Avinžirniai WELL DONE, 500 g",1.25,300,"https://barbora.lt/produktai/avinzirniai-well-done-500-g-57342"],["Avinžirniai SKANĖJA, 500 g",1.49,300,"https://barbora.lt/produktai/avinzirniai-skaneja-500-g"],["Avinžirniai COPPOLA (CECI), 400 g",1.39,240,"https://barbora.lt/produktai/avinzirniai-coppola-ceci-400-g"],["Konservuoti avinžirniai WELL DONE, 330 g",1.19,198,"https://barbora.lt/produktai/konservuoti-avinzirniai-well-done-330-g"],["Garuose ruošti avinžirniai GLOBUS, 300 g",1.29,180,"https://barbora.lt/produktai/garuose-ruosti-avinzirniai-globus-300-g"],["Garuose virti avinžirniai WELL DONE, 150 g",0.79,90,"https://barbora.lt/produktai/garuose-virti-avinzirniai-well-done-150-g"],["Avinžirnių ir pupelių mišinys BONDUELLE VAPEUR, 310 g",2.09,186,"https://barbora.lt/produktai/avinzirniu-ir-pupeliu-misinys-bonduelle-vapeur-310-g"]],"lentils":[["Raudonieji lęšiai GALINTA, 500 g",1.29,500,"https://barbora.lt/produktai/raudonieji-lesiai-galinta-500-g"],["Raudonieji lęšiai GRALLA, 400 g",1.19,399,"https://barbora.lt/produktai/raudonieji-lesiai-gralla-400-g"],["Raudonieji lęšiai SKANĖJA, 500 g",1.59,500,"https://barbora.lt/produktai/raudonieji-lesiai-skaneja-0-5-kg"],["Raudonieji lęšiai BUON GUSTO, 350 g",1.59,350,"https://barbora.lt/produktai/raudonieji-lesiai-buon-gusto-350-g"]],"beans":[["Konservuotos raudonosios pupelės EXTRA LINE, 400 g",0.67,239,"https://barbora.lt/produktai/konservuotos-raudonosios-pupeles-extra-line-400-g"],["Konservuotos raudonosios pupelės HEINZ, 400 g",1.49,240,"https://barbora.lt/produktai/konservuotos-raudonosios-pupeles-heinz-400-g"],["Garuose ruoštos raudonosios pupelės GLOBUS, 326 g",1.39,196,"https://barbora.lt/produktai/garuose-ruostos-raudonosios-pupeles-globus-326-g"],["Garuose ruoštos raudonosios pupelės BONDUELLE VAPEUR, 310 g",1.59,186,"https://barbora.lt/produktai/garuose-ruostos-raudonosios-pupeles-bonduelle-vapeur-310-g"],["Garuose virtos raudonos pupelės WELL DONE, 150 g",0.79,90,"https://barbora.lt/produktai/garuose-virtos-raudonosios-pupeles-well-done-150-g"]],"olive":[["Alyvuogių aliejus BASSO, 500 ml",4.99,460,"https://barbora.lt/produktai/alyvuogiu-aliejus-basso-500-ml"],["Ypač tyras alyvuogių aliejus BASSO, 750 ml",7.49,690,"https://barbora.lt/produktai/ypac-tyras-alyvuogiu-aliejus-basso-750-ml"],["Maišytas alyvuogių aliejus WELL DONE LIGHT, 750 ml",7.49,690,"https://barbora.lt/produktai/alyvuogiu-aliejus-well-done-750-ml"],["Ypač grynas alyvuogių aliejus SPARTA GROVES, 750 ml",7.99,690,"https://barbora.lt/produktai/ypac-grynas-alyvuogiu-aliejus-sparta-groves-750-ml"],["Ypač grynas alyvuogių aliejus SPARTA GROVES, 750 ml",7.99,690,"https://barbora.lt/produktai/ypac-grynas-alyvuogiu-aliejus-sparta-groves-750-ml-15580"],["Ypač tyras alyvuogių aliejus E. V. WELL DONE, 750 ml",7.99,690,"https://barbora.lt/produktai/ypac-grynas-alyvuogiu-aliejus-well-done-750-ml"],["Ypač švelnus alyvuogių aliejus LA ESPANOLA, 500 ml",5.99,460,"https://barbora.lt/produktai/ypac-svelnus-alyvuogiu-aliejus-la-espanola-500-ml"],["Ypač tyras alyvuogių aliejus BASSO, 500 ml",5.99,460,"https://barbora.lt/produktai/ypac-tyras-alyvuogiu-aliejus-basso-500-ml"]],"rapeseed":[["OBELIŲ rafinuotas rapsų aliejus, 2 l",4.29,1836,"https://barbora.lt/produktai/obeliu-rafinuotas-rapsu-aliejus-2-l"],["OBELIŲ rapsų aliejus, 900 ml",1.99,828,"https://barbora.lt/produktai/obeliu-rapsu-aliejus-900-ml"],["Rapsų aliejus WELL DONE, 1 l",2.39,920,"https://barbora.lt/produktai/rapsu-aliejus-well-done-1-l"],["Pirmo spaudimo rapsų aliejus FLORIOL, 1 l",2.49,920,"https://barbora.lt/produktai/pirmo-spaudimo-rapsu-aliejus-floriol-1-l"],["OBELIŲ linų sėmenų ir rapsų aliejus, 900 ml",2.59,830,"https://barbora.lt/produktai/obeliu-linu-semenu-ir-rapsu-aliejus-0-9-l"],["Rūkyti šprotai rapsų aliejuje WELL DONE, 250 g",3.49,230,"https://barbora.lt/produktai/rukyti-sprotai-rapsu-aliejuje-well-done-250-g"]],"walnuts":[["Gliaudyti graikiniai riešutai EXTRA LINE, 150 g",1.49,150,"https://barbora.lt/produktai/gliaudyti-graikiniai-riesutai-extra-line-150-g"],["Graikiniai riešutai WELL DONE, 500 g",5.99,500,"https://barbora.lt/produktai/graikiniai-riesutai-well-done-500-g"],["Graikiniai riešutai FAMILY PACK ARIMEX, 600 g",7.99,600,"https://barbora.lt/produktai/graikiniai-riesutai-family-pack-arimex-600-g"],["Graikiniai riešutai WELL DONE, 200 g",2.69,200,"https://barbora.lt/produktai/graikiniai-riesutai-well-done-200-g"],["Graikiniai riešutai ARIMEX, 300 g",4.49,300,"https://barbora.lt/produktai/graikiniai-riesutai-arimex-300-g"],["Bri sūris PRESIDENT su graikiniais riešutais, 60% rieb. s.m., 1 kg",14.99,1000,"https://barbora.lt/produktai/bri-suris-president-su-graikiniais-riesutais-60-proc-rieb-s-m-1-kg"],["Graikiniai riešutai ARIMEX, 100 g",1.59,100,"https://barbora.lt/produktai/graikiniai-riesutai-arimex-100-g"],["Sūris LANDANA su graikiniais riešutais, 50 % rieb. s. m., 1 kg",17.39,1000,"https://barbora.lt/produktai/suris-landana-su-graikiniais-riesutais-50-proc-rieb-s-m-1-kg"]],"seeds":[["Lukštentos saulėgrąžos EXTRA LINE, 150 g",0.45,150,"https://barbora.lt/produktai/lukstentos-saulegrazos-extra-line-150-g"],["Lukštentos saulėgrąžos WELL DONE, 500 g",1.79,500,"https://barbora.lt/produktai/lukstentos-saulegrazos-well-done-500-g"],["Lukštentos saulėgrąžos ARIMEX, 500 g",2.19,500,"https://barbora.lt/produktai/lukstentos-saulegrazos-arimex-500-g"]],"pb":[["Švelnus žemės riešutų kremas WELL DONE, 1 kg",6.49,1000,"https://barbora.lt/produktai/svelnus-zemes-riesutu-kremas-well-done-1-kg"],["Traškus žemės riešutų kremas WELL DONE, 1 kg",6.49,1000,"https://barbora.lt/produktai/traskus-zemes-riesutu-kremas-well-done-1-kg"],["Žemės riešutų kremas ALVO, 1 kg",6.99,1000,"https://barbora.lt/produktai/zemes-riesutu-kremas-alvo-1-kg"],["Traškus žemės riešutų kremas ALVO, 1 kg",6.99,1000,"https://barbora.lt/produktai/traskus-zemes-riesutu-kremas-alvo-1-kg"],["Traškus žemės riešutų kremas ALVO, 500 g",3.69,500,"https://barbora.lt/produktai/traskus-zemes-riesutu-kremas-alvo-500-g"],["Žemės riešutų kremas ALVO, 500 g",3.69,500,"https://barbora.lt/produktai/zemes-riesutu-kremas-alvo-500-g"],["Traškus žemės riešutų kremas ULDUKAS, 500 g",3.79,500,"https://barbora.lt/produktai/traskus-zemes-riesutu-kremas-uldukas-500-g"],["Švelnus žemės riešutų kremas WELL DONE, 300 g",2.49,300,"https://barbora.lt/produktai/svelnus-zemes-riesutu-kremas-well-done-300-g"]],"honey":[["Lietuviškas medus, 700 g",3.95,700,"https://barbora.lt/produktai/lietuviskas-medus-700-g"],["Skystas KORIO medus, 500 g",3.39,500,"https://barbora.lt/produktai/skystas-korio-medus-500-g"],["Medus WELL DONE, vasaros žiedų, 500 g",3.99,500,"https://barbora.lt/produktai/vasaros-ziedu-medus-well-done-500-g"],["Grikių medus WELL DONE, 500 g",3.99,500,"https://barbora.lt/produktai/grikiu-medus-well-done-500-g"],["Lietuviškas medus, 350 g",2.89,350,"https://barbora.lt/produktai/lietuviskas-medus-350-g"],["Medaus pyragas, 1 kg",9.94,1000,"https://barbora.lt/produktai/medaus-pyragas-1-kg-35691"],["Medaus pyragas, 350 g",4.45,350,"https://barbora.lt/produktai/medaus-pyragas-350-g"],["Medaus pyragas su karamelės įdaru, 300 g",4.45,300,"https://barbora.lt/produktai/medaus-pyragas-su-karameles-idaru-300-g"]],"hummus":[["Humusas su paprikomis WELL DONE, 160 g",1.19,160,"https://barbora.lt/produktai/humusas-su-paprikomis-well-done-160-g"],["Humusas su burokėliais WELL DONE, 160 g",1.29,160,"https://barbora.lt/produktai/humusas-su-burokeliais-well-done-160-g"],["Humusas su gvakamole WELL DONE PREMIUM, 160 g",1.49,160,"https://barbora.lt/produktai/humusas-su-gvakamole-well-done-premium-160-g-160-g"],["Humusas su mangais, aitr. papr.WELL DONE PREMIUM,160g",1.49,160,"https://barbora.lt/produktai/humusas-su-mangais-aitr-papr-well-done-premium-160-g-160-g"],["Humusas SKANOVĖ, 160 g",2.19,160,"https://barbora.lt/produktai/humusas-skanove-160-g"]],"banana":[["Bananai, nuo 20 cm, 1 kg",1.19,1000,"https://barbora.lt/produktai/bananai-nuo-20-cm-1-kg"],["Vaisių tyrė SEMPER su obuoliais, avietėmis, bananais, nuo 6 mėn., 110 g",2.09,110,"https://barbora.lt/produktai/vaisine-tyre-semper-su-obuoliais-aviet-banan-nuo-6-men-110-g"],["Šaldyti bananai šokolade SCHO FRU LADE, 130 g",4.79,130,"https://barbora.lt/produktai/saldyti-bananai-sokolade-scho-fru-lade-130-g"]],"apple":[["Obuoliai, nuo 55 mm (veislė: žr. ant pakuotės), 1 kg",0.89,1000,"https://barbora.lt/produktai/lenkiski-obuoliai-nuo-55-mm-1-kg"],["Obuoliai CHAMPION, fasuoti, nuo 60 mm, 1 kg",1.15,1000,"https://barbora.lt/produktai/obuoliai-champion-fasuoti-1-kg"],["Obuoliai JONAGOLD, 75-85 mm, 1 kg",1.45,1000,"https://barbora.lt/produktai/obuoliai-jonagold-75-85-mm-1-kg"],["Lietuviški obuoliai LINKĖJIMAI IŠ KAIMO, nuo 55 mm, 1 kg",1.69,1000,"https://barbora.lt/produktai/lietuviski-obuoliai-linkejimai-is-kaimo-nuo-55-mm-1-kg"],["Obuoliai PRIMO, nuo 90 mm, 1 kg",1.99,1000,"https://barbora.lt/produktai/obuoliai-primo-nuo-80-mm-1-kg"],["Obuoliai ROYAL GALA, nuo 75-80 mm, 1 kg",2.29,1000,"https://barbora.lt/produktai/obuoliai-royal-gala-nuo-75-80-mm-1-kg"],["Obuoliai GOLDEN, 75-85 mm, 1 kg",2.29,1000,"https://barbora.lt/produktai/obuoliai-golden-75-85-mm-1-kg"],["Obuoliai GRANNY SMITH, 70-85 mm, 1 kg",2.29,1000,"https://barbora.lt/produktai/obuoliai-granny-smith-70-85-mm-1-kg"]],"berries":[["Šaldytų raudonųjų uogų mišinys WELL DONE, 400 g",3.49,400,"https://barbora.lt/produktai/saldytu-raudonuju-uogu-misinys-well-done-400-g"]],"carrot":[["Plautos morkos, 1 kg",0.59,1000,"https://barbora.lt/produktai/plautos-morkos-1-kg"],["Plautos morkos LINKĖJIMAI IŠ KAIMO, 1 kg",0.99,1000,"https://barbora.lt/produktai/plautos-morkos-linkejimai-is-kaimo-1-kg"],["K. r. lašišų suktinukai su lašišų ir morkų įdaru, 1 kg",5.29,1000,"https://barbora.lt/produktai/k-r-lasisu-suktinukai-su-lasisu-ir-morku-idaru-1-kg"]],"beet":[["Lietuviški burokėliai, 1 kg",0.45,1000,"https://barbora.lt/produktai/lietuviski-burokeliai-1-kg"],["Kepti burokėliai WELL DONE, 830 g",1.79,829,"https://barbora.lt/produktai/kepti-burokeliai-well-done-830-g"],["Sūdyta atlantinių silkių filė OCEAN su burokėliais ir majonezu, 600 g",2.15,601,"https://barbora.lt/produktai/silkiu-file-su-burokeliais-ir-majonezu-wide-ocean-600-g"],["Burokėlių mišrainė su aliejumi, 300 g",1.15,300,"https://barbora.lt/produktai/burokeliu-misraine-su-aliejumi-300-g"],["Burokėlių karpačas, 400 g",1.79,400,"https://barbora.lt/produktai/burokeliu-karpacas-400-g"],["Sūd. atlant.silkių filė gab. su trošk.burokėliais, svogūnais, 210 g",1.69,210,"https://barbora.lt/produktai/sud-atlant-silkiu-file-gab-su-trosk-burokeliais-svogunais-210-g"],["Humusas su burokėliais WELL DONE, 160 g",1.29,160,"https://barbora.lt/produktai/humusas-su-burokeliais-well-done-160-g"],["BOCMANO silkių filė ZIGMAS su burokėliais, 300 g",2.69,300,"https://barbora.lt/produktai/bocmano-silkiu-file-zigmas-su-burokeliais-300-g"]],"cabbage":[["Lietuviški švieži baltagūžiai kopūstai, 1 kg",0.69,1000,"https://barbora.lt/produktai/lietuviski-baltaguziai-kopustai-kg-1-kg"],["Kininiai kopūstai, 1 kg",1.85,1000,"https://barbora.lt/produktai/kininiai-kopustai-1-kg"],["Švieži baltagūžiai kopūstai, 1 kg",1.89,1000,"https://barbora.lt/produktai/sviezi-baltaguziai-kopustai-1-kg"]],"tomato":[["Pomidorai, 57-67 mm, 1 kg",2.49,1000,"https://barbora.lt/produktai/pomidorai-57-67-mm-1-kg"],["Avietiniai pomidorai, 57-67 mm, 1 kg",2.59,1000,"https://barbora.lt/produktai/avietiniai-pomidorai-82-102-mm-1-kg"],["Lietuviški pomidorai, nuo 57 mm, 1 kg",2.59,1000,"https://barbora.lt/produktai/lietuviski-pomidorai-nuo-57-mm-1-kg"],["Slyviniai pomidorai, 57-67 mm, 1 kg",2.99,1000,"https://barbora.lt/produktai/slyviniai-pomidorai-47-57-mm-1-kg"],["Pomidorai su šakelėmis, 67-82 mm, 1 kg",3.99,1000,"https://barbora.lt/produktai/pomidorai-su-sakelemis-57-67-mm-1-kg"],["Juodieji pomidorai, 67-82 mm, 1 kg",4.15,1000,"https://barbora.lt/produktai/juodieji-pomidorai-57-67-mm-1-kg"],["Lietuviški raudonieji slyviniai pomidorai, 500 g",2.69,500,"https://barbora.lt/produktai/lietuviski-raudonieji-slyviniai-pomidorai-500-g"],["Maži slyviniai pomidorai kibirėlyje, 500 g.",2.99,500,"https://barbora.lt/produktai/mazi-slyviniai-pomidorai-kibirelyje-500-g-500-g"]],"cucumber":[["Ilgavaisis agurkas, 220 g",0.99,220,"https://barbora.lt/produktai/ilgavaisis-agurkas-220-g"],["Lietuviški trumpavaisiai agurkai, 1 kg",4.89,1000,"https://barbora.lt/produktai/lietuviski-trumpavaisiai-agurkai-1-kg"],["Užkandžių agurkai SPILVA (pjaustyti išilgai), 460 g",2.39,460,"https://barbora.lt/produktai/uzkandziu-agurkai-spilva-pjaustyti-isilgai-460-g"],["Tepamoji varškė be laktozės RYTAS 15% rieb. su agurkais ir krapais, 130g",1.69,130,"https://barbora.lt/produktai/tep-varske-rytas-su-agurk-ir-krapais-be-lakt-15-proc-rieb-130-g"]],"onion":[["Svogūnai, 1 kg",0.48,1000,"https://barbora.lt/produktai/svogunai-1-kg-80990"],["Rausvieji svogūnai, 1 kg",0.89,1000,"https://barbora.lt/produktai/rausvieji-svogunai-1-kg"],["Lietuviški rausvieji svogūnai, 250 g",0.89,250,"https://barbora.lt/produktai/lietuviski-rausvieji-svogunai-250-g"],["Konservuoti svogūnėliai WELL DONE, 330 g",1.49,330,"https://barbora.lt/produktai/konservuoti-svoguneliai-well-done-330-g"],["Konservuoti svogūnėliai KĖDAINIŲ KONSERVAI, 330 g",1.65,330,"https://barbora.lt/produktai/konservuoti-svoguneliai-kedainiu-konservai-330-g"],["Valgomieji svogūnėliai, 250 g",1.49,250,"https://barbora.lt/produktai/valgomieji-svoguneliai-250-g"],["Žemės riešutai traškioje luobelėje JĖGA su svogūnais, 200 g",1.49,200,"https://barbora.lt/produktai/zemes-riesutai-traskioje-luobeleje-jega-su-svogunais-200-g"],["TRADICINĖ silkių filė su marin.svogūnais ir krapais (aliej.), 480 g",3.89,480,"https://barbora.lt/produktai/tradicine-silkiu-file-su-marin-svogunais-ir-krapais-aliej-480-g"]],"pepper":[["Baltos saldžiosios paprikos, 70-90 mm, 1 kg",2.99,1000,"https://barbora.lt/produktai/baltos-saldziosios-paprikos-70-90-mm-1-kg"],["Raudonos saldžiosios paprikos, 80-100 mm, 1 kg",3.05,1000,"https://barbora.lt/produktai/raudonos-saldziosios-paprikos-80-100-mm-1-kg"],["Žalios saldžiosios paprikos, 70-90 mm, 1 kg",3.39,1000,"https://barbora.lt/produktai/zalios-saldziosios-paprikos-70-90-mm-1-kg"],["Geltonos saldžiosios paprikos, 90-110 mm, 1 kg",3.49,1000,"https://barbora.lt/produktai/geltonos-saldziosios-paprikos-80-100-mm-1-kl-1-kg"],["Įvairiaspalvių saldžiųjų paprikų rinkinys WELL DONE, 500 g",1.99,500,"https://barbora.lt/produktai/ivairiaspalviu-saldziuju-papriku-rinkinys-well-done-500-g"],["Pailgos saldžiosios paprikos WELL DONE, 250 g",1.59,250,"https://barbora.lt/produktai/pailgos-saldziosios-paprikos-well-done-250-g"],["Mažos saldžiosios paprikos SWEET BITE WELL DONE, 150 g",1.59,150,"https://barbora.lt/produktai/mazos-saldziosios-paprikos-sweet-bite-well-done-150-g"],["Aitriosios paprikos PADRON, 200 g, 200 g",2.49,200,"https://barbora.lt/produktai/aitriosios-paprikos-padron-200-g-200-g"]],"mushroom":[["Pievagrybiai, 1 kg",3.29,1000,"https://barbora.lt/produktai/pievagrybiai-1-kg"],["Pievagrybiai WELL DONE, 250 g",1.09,250,"https://barbora.lt/produktai/pievagrybiai-well-done-250-g"],["Pievagrybiai WELL DONE, 500 g",2.69,500,"https://barbora.lt/produktai/pievagrybiai-well-done-500-g"],["Plovas su pievagrybiais (tinka ir veganams), 1 kg",7.98,1000,"https://barbora.lt/produktai/plovas-su-pievagrybiais-tinka-ir-veganams-1-kg"],["Vištienos troškinys su pievagrybiais ir voveraitėmis, 390 g",3.49,390,"https://barbora.lt/produktai/vistienos-troskinys-su-pievagrybiais-ir-voveraitemis-390-g"],["Lyd. PANEMUNĖS PIEVŲ kremas su baravyk. ir pievagryb., 22 %, 160 g",2.05,160,"https://barbora.lt/produktai/lyd-panemunes-pievu-kremas-su-baravyk-ir-pievagryb-22-proc-160-g"]],"broccoli":[["Šaldyti brokoliai BONDUELLE VAPEUR, 400 g",1.99,400,"https://barbora.lt/produktai/saldyti-brokoliai-bonduelle-vapeur-400-g"],["Šaldyti brokolių ryžiai BONDUELLE, 400 g",2.25,400,"https://barbora.lt/produktai/saldyti-brokoliu-ryziai-bonduelle-400-g"]],"spinach":[["Mažieji špinatai WELL DONE, 200 g",1.69,200,"https://barbora.lt/produktai/mazieji-spinatai-well-done-200-g"],["Špinatai WELL DONE, 100 g",1.19,100,"https://barbora.lt/produktai/spinatai-well-done-100-g"]],"mixveg":[["Šaldytų daržovių mišinys su paprikomis WELL DONE, 400 g",1.29,399,"https://barbora.lt/produktai/saldytu-darzoviu-misinys-su-paprikomis-well-done-400-g"],["Kinietiško stiliaus daržovių mišinys WELL DONE, 400 g",1.59,399,"https://barbora.lt/produktai/saldytas-kiniskas-darzoviu-misinys-well-done-400-g"],["Šaldytas daržovių mišinys BONDUELLE 4 SEASONS MIX, 400 g",1.65,400,"https://barbora.lt/produktai/saldytas-darzoviu-misinys-bonduelle-4-seasons-mix-400-g"],["Šaldytas daržovių mišinys BONDUELLE CALIFORNIA MIX, 400 g",1.99,400,"https://barbora.lt/produktai/saldytas-darzoviu-misinys-bonduelle-california-mix-400-g"],["Šaldytų daržovių mišinys BONDUELLE VAPEUR ROYAL, 400 g",2.19,400,"https://barbora.lt/produktai/saldytu-darzoviu-misinys-bonduelle-vapeur-royal-400-g"],["Šaldytas THAI daržovių mišinys BONDUELLE, 400 g",2.29,400,"https://barbora.lt/produktai/saldytas-thai-darzoviu-misinys-bonduelle-400-g"],["Kepti paruoštas daržovių mišinys MEDITEREAN BONDUELLE, 400 g",2.49,400,"https://barbora.lt/produktai/kepti-paruostas-darzoviu-misinys-mediterean-bonduelle-400-g-400-g"],["Kepti paruoštas daržovių mišinys RUSTIC BONDUELLE, 400 g",2.49,400,"https://barbora.lt/produktai/kepti-paruostas-darzoviu-misinys-rustic-bonduelle-400-g-400-g"]]},"rimi":{"oats":[["Avižiniai dribsniai RIMI SMART, 400 g",0.36,400,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/kruopos/dribsniai/aviziniai-dribsniai-rimi-smart-400-g/p/809236"],["Visų grūdo dalių aviž. dribsniai RIMI, 1 kg",1.99,1000,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/kruopos/dribsniai/visu-grudo-daliu-aviz-dribsniai-rimi-1-kg/p/816600"],["Avižiniai dribsniai dėžutėje GALINTA, 500 g",1.09,500,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/kruopos/dribsniai/aviziniai-dribsniai-dezuteje-galinta-500-g/p/117476"],["Pilno grūdo avižų dribsniai DOBELE, 500 g",1.25,500,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/kruopos/dribsniai/pilno-grudo-avizu-dribsniai-dobele-500-g/p/183737"],["Avižiniai dribsniai VIKIS, 500 g",1.29,500,"https://www.rimi.lt/e-parduotuve/lt/produktai/-vikis-prekiu-krautuvele/bakaleja/aviziniai-dribsniai-vikis-500-g/p/995642"],["Viso grūdo avižiniai dribsn. MALSENA, 1,5 kg",3.99,1500,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/kruopos/dribsniai/viso-grudo-aviziniai-dribsn-malsena-1-5-kg/p/176797"],["Pilno grūdo avižiniai dribsniai RIMI, 500 g",1.45,500,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/kruopos/dribsniai/pilno-grudo-aviziniai-dribsniai-rimi-500-g/p/805618"],["Pilno grūdo avižų dribsniai DOBELE, 500 g",1.59,500,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/kruopos/dribsniai/pilno-grudo-avizu-dribsniai-dobele-500-g/p/181642"]],"buckwheat":[["Grikių kruopos EKOFRISA, 800 g",1.69,801,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/kruopos/grikiai/grikiu-kruopos-ekofrisa-800-g/p/129516"],["Grikių kruopos RIMI SMART, 800 g",1.79,799,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/kruopos/grikiai/grikiu-kruopos-rimi-smart-800-g/p/804281"],["Garinti grikiai RIMI, 800 g",1.79,799,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/kruopos/grikiai/garinti-grikiai-rimi-800-g/p/816373"],["Grikiai RIMI SMART 8X100g",2.39,799,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/kruopos/grikiai/grikiai-rimi-smart-8x100g/p/815410"],["Grikių kruopos VIKIS, 800 g",2.49,801,"https://www.rimi.lt/e-parduotuve/lt/produktai/-vikis-prekiu-krautuvele/bakaleja/grikiu-kruopos-vikis-800-g/p/995628"],["Grikių kruopos GALINTA, 800 g",2.99,799,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/kruopos/grikiai/grikiu-kruopos-galinta-800-g/p/133214"],["Grikių kruopos SKANĖJA, 800 g",2.99,799,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/kruopos/grikiai/grikiu-kruopos-skaneja-800-g/p/153320"],["Grikių kruopos SKANĖJA, 500 g",1.99,500,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/kruopos/grikiai/grikiu-kruopos-skaneja-500-g/p/142887"]],"rice":[["Ilgagrūdžiai ryžiai RIMI BASIC, 800 g",0.87,798,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/kruopos/ryziai/ilgagrudziai-ryziai-rimi-basic-800-g/p/804297"],["Ilgagrūdžiai ryžiai RIMI SMART, 4 x 100 g",0.58,400,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/kruopos/ryziai/ilgagrudziai-ryziai-rimi-smart-4-x-100-g/p/805069"],["Ilgagrūdžiai ryžiai RIMI, 800 g",1.52,800,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/kruopos/ryziai/ilgagrudziai-ryziai-rimi-800-g/p/817463"],["Plikyti ryžiai RIMI SMART, 800 g",1.59,799,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/kruopos/ryziai/plikyti-ryziai-rimi-smart-800-g/p/817638"],["Ilgagrūdžiai ryžiai RIMI, 8 x 100 g",1.59,799,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/kruopos/ryziai/ilgagrudziai-ryziai-rimi-8-x-100-g/p/817697"],["Ilgagrūdžiai ryžiai GRALLA PREMIUM, 800 g",1.69,801,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/kruopos/ryziai/ilgagrudziai-ryziai-gralla-premium-800-g/p/1013423"],["Ilgagrūdžiai ryžiai GALINTA DELICAT, 800 g",2.15,799,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/kruopos/ryziai/ilgagrudziai-ryziai-galinta-delicat-800-g/p/146562"],["Ilgagrūdžiai ryžiai SKANĖJA, 500 g",1.49,500,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/kruopos/ryziai/ilgagrudziai-ryziai-skaneja-500-g/p/142882"]],"pasta":[["Pilno gr. makaron. SPAGHETTI INTEGRALE, 500 g",2.29,500,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/makaronai/pilno-grudo-makaronai/pilno-gr-makaron-spaghetti-integrale-500-g/p/168506"]],"rye":[["MOČIUTĖS šviesi ruginė duona AUTENTIŠKOS,450g",1.67,450,"https://www.rimi.lt/e-parduotuve/lt/produktai/duonos-gaminiai-/duona/sviesi-duona/mociutes-sviesi-rugine-duona-autentiskos-450g/p/979626"],["TIKRA ruginė duona, 730g",2.99,729,"https://www.rimi.lt/e-parduotuve/lt/produktai/duonos-gaminiai-/duona/juoda-duona/tikra-rugine-duona-730g/p/943005"],["Tamsi ruginė duona su saulėgrąžomis,500g",2.05,500,"https://www.rimi.lt/e-parduotuve/lt/produktai/duonos-gaminiai-/duona/juoda-duona/tamsi-rugine-duona-su-saulegrazomis-500g/p/998785"],["Ruginė duona JONĖ, 390g",1.69,390,"https://www.rimi.lt/e-parduotuve/lt/produktai/duonos-gaminiai-/duona/juoda-duona/rugine-duona-jone-390g/p/902811"]],"tortilla":[["Kviet., kukur. tortilijos RIMI PLANET, 320 g",1.99,320,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/pasaulio-skoniai/meksikos-virtuve/kviet-kukur-tortilijos-rimi-planet-320-g/p/811275"],["Kvietinės tortilijos RIMI PLANET, 320 g",2.29,320,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/pasaulio-skoniai/meksikos-virtuve/kvietines-tortilijos-rimi-planet-320-g/p/808518"],["Tortilijos PROTEIN LAB, 6 vnt., 360 g",2.69,360,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/pasaulio-skoniai/meksikos-virtuve/tortilijos-protein-lab-6-vnt-360-g/p/818836"],["Kviet. tortilijos LIETUVOS KEPĖJAS, 25cm,360g",2.79,360,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/pasaulio-skoniai/meksikos-virtuve/kviet-tortilijos-lietuvos-kepejas-25cm-360g/p/1014234"],["Daugiagrūd. tortilijos LIETUVOS KEPĖJAS, 360g",2.79,360,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/pasaulio-skoniai/meksikos-virtuve/daugiagrud-tortilijos-lietuvos-kepejas-360g/p/1014233"],["Piln.grūd.kviet. tortilijos RIMI PLANET, 370g",2.89,370,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/pasaulio-skoniai/meksikos-virtuve/piln-grud-kviet-tortilijos-rimi-planet-370g/p/811273"],["Įvairių grūdų tortilijos RIMI PLANET, 370g",2.89,370,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/pasaulio-skoniai/meksikos-virtuve/ivairiu-grudu-tortilijos-rimi-planet-370g/p/811258"],["Tortilijos SANTA MARIA ORIGINAL, 8 vnt, 320 g",3.19,320,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/pasaulio-skoniai/meksikos-virtuve/tortilijos-santa-maria-original-8-vnt-320-g/p/162087"]],"potato":[["Šviež. liet. Bulvės GALA/ PAROL,kl.2,d.45+,1k",0.72,1600,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/bulves/sviez-liet-bulves-gala-parol-kl-2-d-45-1k/p/244679"],["Liet. šviežios fas. bulvės RIMI, d. 45+, 1 kg",2.27,2551,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/bulves/liet-sviezios-fas-bulves-rimi-d-45-1-kg/p/816008"],["Fas.bulvės liet.patiekalams 45+, kg",2.27,2551,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/bulves/fas-bulves-liet-patiekalams-45-kg/p/931917"],["Liet.fas.bulvės salotoms 45+, kg",2.27,2551,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/bulves/liet-fas-bulves-salotoms-45-kg/p/931941"],["LT plautos fasuotos bulvės RIMI 45+, kg",2.52,2545,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/bulves/lt-plautos-fasuotos-bulves-rimi-45-kg/p/816025"],["Šald. gruzd. bulvių lazdelės RIMI, 7 mm, 1 kg",1.69,1000,"https://www.rimi.lt/e-parduotuve/lt/produktai/saldytas-maistas/saldytos-darzoves-vaisiai-ir-uogos/saldytos-bulves/sald-gruzd-bulviu-lazdeles-rimi-7-mm-1-kg/p/811418"],["Fasuotos bulvės Floury Rimi, 1,2 kg",2.19,1203,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/bulves/fasuotos-bulves-floury-rimi-1-2-kg/p/815282"],["Ekolog. bulvės RIMI ECO, 1 kl, 40-60 mm, 1 kg",2.29,1000,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/bulves/ekolog-bulves-rimi-eco-1-kl-40-60-mm-1-kg/p/818808"]],"chicken":[["Viščiukų krūtinėlių filė RIMI, 500 g",3.49,500,"https://www.rimi.lt/e-parduotuve/lt/produktai/mesa-ir-zuvis-/sviezia-paukstiena/vistiena/visciuku-krutineliu-file-rimi-500-g/p/813427"],["Švž.viščiukų broilerių filė be  ant.RIMI, 1kg",2.64,300,"https://www.rimi.lt/e-parduotuve/lt/produktai/mesa-ir-zuvis-/sviezia-paukstiena/vistiena/svz-visciuku-broileriu-file-be-ant-rimi-1kg/p/813103"],["Šviež.viščiuko broilerio filė be antib., 500g",5.49,500,"https://www.rimi.lt/e-parduotuve/lt/produktai/mesa-ir-zuvis-/sviezia-paukstiena/vistiena/sviez-visciuko-broilerio-file-be-antib-500g/p/995822"],["Vištienos krūtinėlių keps.MORLINY,I.r.,350g",4.89,350,"https://www.rimi.lt/e-parduotuve/lt/produktai/mesa-ir-zuvis-/apdorotos-mesos-ir-paukstienos-gaminiai-/mesos-patiekalai/vistienos-krutineliu-keps-morliny-i-r-350g/p/944676"],["K.r. vištienos filė MORLINY vak., I r., 1kg",8.26,570,"https://www.rimi.lt/e-parduotuve/lt/produktai/mesa-ir-zuvis-/apdorotos-mesos-ir-paukstienos-gaminiai-/karstai-rukyti-mesos-gaminiai/k-r-vistienos-file-morliny-vak-i-r-1kg/p/287066"]],"pork":[["Atšaldyta kiaulienos išpjova, 1 kg",2.5,501,"https://www.rimi.lt/e-parduotuve/lt/produktai/mesa-ir-zuvis-/sviezia-mesa/kiauliena/atsaldyta-kiaulienos-ispjova-1-kg/p/812455"]],"beef":[["Atšald. smulk. jautiena RIMI, rieb. 18%, 1 kg",4.4,501,"https://www.rimi.lt/e-parduotuve/lt/produktai/mesa-ir-zuvis-/malta-mesa/atsald-smulk-jautiena-rimi-rieb-18-1-kg/p/807871"],["Jautienos faršas RIMI SMART, atšald. 400 g",3.99,400,"https://www.rimi.lt/e-parduotuve/lt/produktai/mesa-ir-zuvis-/malta-mesa/jautienos-farsas-rimi-smart-atsald-400-g/p/816059"],["Atšadyta smulk. jautiena HALAL, vakume, 450 g",6.59,450,"https://www.rimi.lt/e-parduotuve/lt/produktai/mesa-ir-zuvis-/malta-mesa/atsadyta-smulk-jautiena-halal-vakume-450-g/p/4012426"]],"salmon":[["Atšaldyta atlantinių lašišų filė, 1 kg",13.99,1000,"https://www.rimi.lt/e-parduotuve/lt/produktai/mesa-ir-zuvis-/sviezios-zuvys-ir-juru-gerybes/zuvu-file/atsaldyta-atlantiniu-lasisu-file-1-kg/p/807538"],["Lašišų filė be kaulų, be odos, RIMI, 500 g",14.99,500,"https://www.rimi.lt/e-parduotuve/lt/produktai/mesa-ir-zuvis-/sviezios-zuvys-ir-juru-gerybes/zuvu-file/lasisu-file-be-kaulu-be-odos-rimi-500-g/p/807669"],["Lašišų filė be kaulų, be odos, RIMI, 250 g",8.49,250,"https://www.rimi.lt/e-parduotuve/lt/produktai/mesa-ir-zuvis-/sviezios-zuvys-ir-juru-gerybes/zuvu-file/lasisu-file-be-kaulu-be-odos-rimi-250-g/p/807654"],["Lašišų filė su priesk. žol. sviestu RIMI,250g",9.49,250,"https://www.rimi.lt/e-parduotuve/lt/produktai/mesa-ir-zuvis-/sviezios-zuvys-ir-juru-gerybes/zuvu-file/lasisu-file-su-priesk-zol-sviestu-rimi-250g/p/807687"]],"herring":[["Atlant. silkių filė aliejuje RIMI SMART, 1 kg",3.19,751,"https://www.rimi.lt/e-parduotuve/lt/produktai/mesa-ir-zuvis-/apdorotos-zuvies-gaminiai/silkes-ir-ju-gaminiai-/atlant-silkiu-file-aliejuje-rimi-smart-1-kg/p/813531"],["Sūd. atl. silkių filė aliej. RIMI SMART, 240g",1.05,175,"https://www.rimi.lt/e-parduotuve/lt/produktai/mesa-ir-zuvis-/apdorotos-zuvies-gaminiai/silkes-ir-ju-gaminiai-/sud-atl-silkiu-file-aliej-rimi-smart-240g/p/811810"],["Dūmo sk. silkių filė aliejuje RIMI SMART,240g",1.05,175,"https://www.rimi.lt/e-parduotuve/lt/produktai/mesa-ir-zuvis-/apdorotos-zuvies-gaminiai/silkes-ir-ju-gaminiai-/dumo-sk-silkiu-file-aliejuje-rimi-smart-240g/p/811811"],["SKANDINAVIŠKA atlantinių silkių filė, 1 kg",2.19,300,"https://www.rimi.lt/e-parduotuve/lt/produktai/mesa-ir-zuvis-/apdorotos-zuvies-gaminiai/silkes-ir-ju-gaminiai-/skandinaviska-atlantiniu-silkiu-file-1-kg/p/297560"],["JUBILIEJINĖ silkių filė DESĖ, 480 g",3.99,480,"https://www.rimi.lt/e-parduotuve/lt/produktai/mesa-ir-zuvis-/apdorotos-zuvies-gaminiai/silkes-ir-ju-gaminiai-/jubiliejine-silkiu-file-dese-480-g/p/241686"],["ŠVENTINĖ silkių filė EXTRA, 480 g",4.09,480,"https://www.rimi.lt/e-parduotuve/lt/produktai/mesa-ir-zuvis-/apdorotos-zuvies-gaminiai/silkes-ir-ju-gaminiai-/sventine-silkiu-file-extra-480-g/p/289527"],["SKANDINAVIŠKA silkių filė EDEGA, 300 g",2.69,300,"https://www.rimi.lt/e-parduotuve/lt/produktai/mesa-ir-zuvis-/apdorotos-zuvies-gaminiai/silkes-ir-ju-gaminiai-/skandinaviska-silkiu-file-edega-300-g/p/988092"],["GURMANIŠKA silkių filė EDEGA, 300 g",2.69,300,"https://www.rimi.lt/e-parduotuve/lt/produktai/mesa-ir-zuvis-/apdorotos-zuvies-gaminiai/silkes-ir-ju-gaminiai-/gurmaniska-silkiu-file-edega-300-g/p/988087"]],"cod":[["Al. rud. menkių filė NORTHLAND, MSC, 800 g",5.99,800,"https://www.rimi.lt/e-parduotuve/lt/produktai/saldytas-maistas/saldyta-mesa-zuvis-ir-juru-gerybes/saldyta-zuvis/al-rud-menkiu-file-northland-msc-800-g/p/814567"],["Šald. menk. filė be od.,be uod. RIMI,MSC,380g",4.99,380,"https://www.rimi.lt/e-parduotuve/lt/produktai/saldytas-maistas/saldyta-mesa-zuvis-ir-juru-gerybes/saldyta-zuvis/sald-menk-file-be-od-be-uod-rimi-msc-380g/p/813369"]],"tuna":[["Tunai savo sultyse JOHN WEST, 160 g",3.59,96,"https://www.rimi.lt/e-parduotuve/lt/produktai/mesa-ir-zuvis-/apdorotos-zuvies-gaminiai/konservuota-zuvis-ir-juros-gerybes/tunai-savo-sultyse-john-west-160-g/p/948729"],["Nesmulkintas tunas savo sultyse CALVO, 240 g",5.49,144,"https://www.rimi.lt/e-parduotuve/lt/produktai/mesa-ir-zuvis-/apdorotos-zuvies-gaminiai/konservuota-zuvis-ir-juros-gerybes/nesmulkintas-tunas-savo-sultyse-calvo-240-g/p/289973"],["Tunų gabaliukai savo sultyse JOHN WEST, 145 g",3.39,87,"https://www.rimi.lt/e-parduotuve/lt/produktai/mesa-ir-zuvis-/apdorotos-zuvies-gaminiai/konservuota-zuvis-ir-juros-gerybes/tunu-gabaliukai-savo-sultyse-john-west-145-g/p/948727"],["Tunų gabaliukai savo sultyse SUN&SEA, 3 x 80g",4.99,94,"https://www.rimi.lt/e-parduotuve/lt/produktai/mesa-ir-zuvis-/apdorotos-zuvies-gaminiai/konservuota-zuvis-ir-juros-gerybes/tunu-gabaliukai-savo-sultyse-sun-sea-3-x-80g/p/913418"],["Nesmulkintas tunas savo sultyse CALVO, 160 g",4.49,67,"https://www.rimi.lt/e-parduotuve/lt/produktai/mesa-ir-zuvis-/apdorotos-zuvies-gaminiai/konservuota-zuvis-ir-juros-gerybes/nesmulkintas-tunas-savo-sultyse-calvo-160-g/p/297469"]],"eggs":[["Vištų kiauš. RIMI SMART, A/M, Nr.2, 10 vnt.",2.19,600,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/kiausiniai/2---ant-kraiko-laikomu-vistu-kiausiniai-/vistu-kiaus-rimi-smart-a-m-nr-2-10-vnt-/p/816707"],["Kaimiški kiaušiniai RIMI (M dydis), 10 vnt.",2.39,600,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/kiausiniai/2---ant-kraiko-laikomu-vistu-kiausiniai-/kaimiski-kiausiniai-rimi-m-dydis-10-vnt-/p/803267"],["Ant kr. laik. vištų kiauš. RIMI, A/L, 10 vnt.",2.69,600,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/kiausiniai/2---ant-kraiko-laikomu-vistu-kiausiniai-/ant-kr-laik-vistu-kiaus-rimi-a-l-10-vnt-/p/816708"],["Laisvai laikomų vištų kiaušiniai RIMI,10 vnt.",2.95,600,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/kiausiniai/1---laisvai-laikomu-vistu-kiausiniai-/laisvai-laikomu-vistu-kiausiniai-rimi-10-vnt-/p/813719"],["Kiaušiniai ZUJŲ PAUKŠTYNAS, L, 10 vnt.",2.95,600,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/kiausiniai/2---ant-kraiko-laikomu-vistu-kiausiniai-/kiausiniai-zuju-paukstynas-l-10-vnt-/p/4006557"],["LAIMINGI kiaušiniai RIDO, 10 vnt., 530g",2.99,600,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/kiausiniai/2---ant-kraiko-laikomu-vistu-kiausiniai-/laimingi-kiausiniai-rido-10-vnt-530g/p/930451"],["Kiaušiniai VIKIS, 10 vnt",4.29,600,"https://www.rimi.lt/e-parduotuve/lt/produktai/-vikis-prekiu-krautuvele/suris-ir-kiausiniai/kiausiniai-vikis-10-vnt/p/923619"]],"curd":[["Pusriebė varškė RIMI SMART, 9 %, 180 g",0.73,180,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/varskes-produktai/varske/pusriebe-varske-rimi-smart-9-180-g/p/813691"],["Pusriebė varškė RIMI, 9 %, 500 g",2.35,500,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/varskes-produktai/varske/pusriebe-varske-rimi-9-500-g/p/816956"],["Varškė RIMI, 9 % rieb., 1 kg",4.99,1000,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/varskes-produktai/varske/varske-rimi-9-rieb-1-kg/p/814557"],["Varškė ROKIŠKIO NAMINĖ, 9 %, 1 kg",5.99,1000,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/varskes-produktai/varske/varske-rokiskio-namine-9-1-kg/p/995810"],["ŽEMAITIJOS varškė, 9 % rieb., 1 kg",6.49,1000,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/varskes-produktai/varske/zemaitijos-varske-9-rieb-1-kg/p/286131"],["Varškė VILVI, 9 % rieb., 180 g",1.19,180,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/varskes-produktai/varske/varske-vilvi-9-rieb-180-g/p/276598"],["ROKIŠKIO NAMINĖ varškė, 9 %, 180 g",1.39,180,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/varskes-produktai/varske/rokiskio-namine-varske-9-180-g/p/252241"],["Varškė ŽAGARĖS PIENINĖ, 9 % rieb., 450 g",3.59,450,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/varskes-produktai/varske/varske-zagares-pienine-9-rieb-450-g/p/913942"]],"kefir":[["Kefyras RIMI SMART, 2,5 % rieb., 0,9 kg",0.69,896,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/kefyras-rugpienis-ir-pasukos/kefyras/kefyras-rimi-smart-2-5-rieb-0-9-kg/p/804862"],["Kefyras RIMI, 2 %, 1 kg",1.29,1000,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/kefyras-rugpienis-ir-pasukos/kefyras/kefyras-rimi-2-1-kg/p/817693"],["ROKIŠKIO NAMINIS kefyras, 2,5 % rieb., 0,9 kg",1.55,901,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/kefyras-rugpienis-ir-pasukos/kefyras/rokiskio-naminis-kefyras-2-5-rieb-0-9-kg/p/248980"],["DVARO kefyras, 2,5 % rieb., 0,9 kg",1.59,898,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/kefyras-rugpienis-ir-pasukos/kefyras/dvaro-kefyras-2-5-rieb-0-9-kg/p/918683"],["ŽEMAITIJOS natūralus kefyras, 2,5 %, 900 g",1.59,898,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/kefyras-rugpienis-ir-pasukos/kefyras/zemaitijos-naturalus-kefyras-2-5-900-g/p/909451"],["Kefyras VILVI, 2,5 % rieb., 1 kg",1.85,1000,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/kefyras-rugpienis-ir-pasukos/kefyras/kefyras-vilvi-2-5-rieb-1-kg/p/297351"],["ŽEMAITIJOS kefyras, 3,2 % rieb., 0,9 kg",1.69,899,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/kefyras-rugpienis-ir-pasukos/kefyras/zemaitijos-kefyras-3-2-rieb-0-9-kg/p/988325"],["DVARO kefyras, 3,2 % rieb., 900 g",1.69,899,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/kefyras-rugpienis-ir-pasukos/kefyras/dvaro-kefyras-3-2-rieb-900-g/p/212917"]],"yogurt":[["Graikiškas jogurtas be priedų RIMI, 400 g",0.52,400,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/jogurtai-ir-desertai/jogurtai-be-pagardu/graikiskas-jogurtas-be-priedu-rimi-400-g/p/808085"],["Nat. jogurtas GRAIKIŠKA AMFORA, 2,6 %, 500 g",1.79,500,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/jogurtai-ir-desertai/jogurtai-be-pagardu/nat-jogurtas-graikiska-amfora-2-6-500-g/p/938985"],["Jogurtas fig.gvaj. GRAIKIŠKA AMFORA,2,4%,500g",1.85,500,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/jogurtai-ir-desertai/jogurtai-su-pagardais/jogurtas-fig-gvaj-graikiska-amfora-2-4-500g/p/938989"],["Jogurtas av. gran. GRAIKIŠKA AMFORA,2,4%,500g",1.85,500,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/jogurtai-ir-desertai/jogurtai-su-pagardais/jogurtas-av-gran-graikiska-amfora-2-4-500g/p/939000"],["Nat. jogurtas GRAIKIŠKA AMFORA, 2,6 %, 250 g",1.09,250,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/jogurtai-ir-desertai/jogurtai-be-pagardu/nat-jogurtas-graikiska-amfora-2-6-250-g/p/938987"],["Jogurtas av. gran. GRAIKIŠKA AMFORA,2,4%,250g",1.09,250,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/jogurtai-ir-desertai/jogurtai-su-pagardais/jogurtas-av-gran-graikiska-amfora-2-4-250g/p/938986"],["Jogurtas fig.gvaj. GRAIKIŠKA AMFORA,2,4%,250g",1.09,250,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/jogurtai-ir-desertai/jogurtai-su-pagardais/jogurtas-fig-gvaj-graikiska-amfora-2-4-250g/p/938993"],["Graikiškas jogurtas be priedų AISTĖ, 400 g",1.89,400,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/jogurtai-ir-desertai/jogurtai-be-pagardu/graikiskas-jogurtas-be-priedu-aiste-400-g/p/903780"]],"milk":[["Pienas RIMI SMART,  2,5 %, 1 l",0.58,1000,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/pienas/pasterizuotas-pienas/pienas-rimi-smart-2-5-1-l/p/814150"],["ROKIŠKIO NAMINIS pienas, 2,5 % rieb., 2 l",2.39,1992,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/pienas/pasterizuotas-pienas/rokiskio-naminis-pienas-2-5-rieb-2-l/p/287699"],["ROKIŠKIO NAMINIS pienas 2,5 %, 1 l",1.29,1000,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/pienas/pasterizuotas-pienas/rokiskio-naminis-pienas-2-5-1-l/p/4000040"],["DVARO pienas, 2,5 % rieb., 2 l",2.59,1992,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/pienas/pasterizuotas-pienas/dvaro-pienas-2-5-rieb-2-l/p/258578"],["DVARO pienas, 2,5 % rieb., 1 l",1.49,1000,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/pienas/pasterizuotas-pienas/dvaro-pienas-2-5-rieb-1-l/p/226054"],["Eko. UAT pienas be lakt. AUGA, 2,5% rieb, 1 l",1.79,1000,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/pienas/pasterizuotas-pienas/eko-uat-pienas-be-lakt-auga-2-5-rieb-1-l/p/4000472"],["Pienas MŪ, UAT, 2,5 % rieb., 1 l",1.79,1000,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/pienas/ilgo-galiojimo-pienas/pienas-mu-uat-2-5-rieb-1-l/p/249002"],["DVARO pienas, 2,5 % rieb., 0,5 l",1.09,500,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/pienas/pasterizuotas-pienas/dvaro-pienas-2-5-rieb-0-5-l/p/259600"]],"cheese":[["ROKIŠKIO sūris, 45 %, 240g",2.69,240,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/suris/fermentiniai-suriai/rokiskio-suris-45-240g/p/277654"],["Ferment. Rokiškio NAMINIS sūris, 45 %, 240 g",2.69,240,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/suris/fermentiniai-suriai/ferment-rokiskio-naminis-suris-45-240-g/p/281140"],["Sūris RIMI FREE FROM GOUDA, 48 % rieb. 150 g",1.79,150,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/suris/fermentiniai-suriai/suris-rimi-free-from-gouda-48-rieb-150-g/p/815955"],["Pjaustytas sūris RIMI GOUDA, 49 %, 150 g",1.85,150,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/suris/fermentiniai-suriai/pjaustytas-suris-rimi-gouda-49-150-g/p/817194"],["Pj. ferm. sūris ROKIŠKIO NAMINIS, 45 %, 150g",1.99,150,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/suris/fermentiniai-suriai/pj-ferm-suris-rokiskio-naminis-45-150g/p/903304"],["Pjaustytas sūris RIMI MAASDAM, 47 %, 150 g",1.99,150,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/suris/fermentiniai-suriai/pjaustytas-suris-rimi-maasdam-47-150-g/p/817225"],["Sūris GERMANTAS GOUDA, 45 % rieb., 200 g",2.79,200,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/suris/fermentiniai-suriai/suris-germantas-gouda-45-rieb-200-g/p/998789"],["Sūris ROKIŠKIO GOUDA, 48 %, 200 g",2.79,200,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/suris/fermentiniai-suriai/suris-rokiskio-gouda-48-200-g/p/995615"]],"butter":[["Sviestas RIMI SMART, 82 % riebumo, 180 g",0.95,180,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/sviestas/sviestas/sviestas-rimi-smart-82-riebumo-180-g/p/817997"],["Sviestas RIMI, 82% riebumo, 200 g",1.49,200,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/sviestas/sviestas/sviestas-rimi-82-riebumo-200-g/p/817284"],["Sald. grietinėlės DVARO sviestas, 82 %, 200 g",1.99,200,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/sviestas/sviestas/sald-grietineles-dvaro-sviestas-82-200-g/p/249081"],["ROKIŠKIO sviestas, 82 % rieb., 200 g",2.79,200,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/sviestas/sviestas/rokiskio-sviestas-82-rieb-200-g/p/248955"],["Sviestas ROKIŠKIO NAMINIS, 82 % rieb., 500 g",6.99,500,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/sviestas/sviestas/sviestas-rokiskio-naminis-82-rieb-500-g/p/4008407"],["ROKIŠKIO NAMINIS sviestas, 82 % rieb., 180 g",2.69,180,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/sviestas/sviestas/rokiskio-naminis-sviestas-82-rieb-180-g/p/261209"],["ŽEMAITIJOS sviestas, 82 % rieb., 200 g",2.99,200,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/sviestas/sviestas/zemaitijos-sviestas-82-rieb-200-g/p/149795"],["Sviestas DUBLIN DAIRY, 82 %, 200 g",3.09,200,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/sviestas/sviestas/sviestas-dublin-dairy-82-200-g/p/915665"]],"sourcream":[["Grietinė ŽALOJI KARVUTĖ, 20 % rieb., 400 g",2.49,400,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/grietine-ir-grietinele/grietine-/grietine-zaloji-karvute-20-rieb-400-g/p/902206"]],"tofu":[["Natūralus tofu LUNTER, 180 g",0.89,180,"https://www.rimi.lt/e-parduotuve/lt/produktai/augaliniai-produktai/augalines-surio-ir-tofu-alternatyvos/tofu/naturalus-tofu-lunter-180-g/p/4000769"]],"chickpeas":[["Avinžirniai RIMI, 400 g / 250 g",1.19,250,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/konservuotas-maistas/konservuoti-avinzirniai-pupeles-ir-lesiai/avinzirniai-rimi-400-g-250-g/p/803528"],["Avinžirniai RIMI PLANET, 400 g",1.19,240,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/kruopos/ankstiniai/avinzirniai-rimi-planet-400-g/p/816604"],["Avinžirniai BONDUELLE VAPEUR, 310g/265g",2.05,265,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/konservuotas-maistas/konservuoti-avinzirniai-pupeles-ir-lesiai/avinzirniai-bonduelle-vapeur-310g-265g/p/173297"],["Virti avinžirniai RIMI, 250 g",1.59,150,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/apdorotos-darzoves/virti-avinzirniai-rimi-250-g/p/944270"],["Garuose ruošti avinžirniai GLOBUS, 300 g",1.97,180,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/konservuotas-maistas/konservuoti-avinzirniai-pupeles-ir-lesiai/garuose-ruosti-avinzirniai-globus-300-g/p/192012"],["Avinžirnių trapukai su daržovėmis VIKIS, 150g",2.99,90,"https://www.rimi.lt/e-parduotuve/lt/produktai/-vikis-prekiu-krautuvele/-uzkandziai/avinzirniu-trapukai-su-darzovemis-vikis-150g/p/965435"]],"lentils":[["Skaldyti raudonieji lęšiai RIMI, 400 g",1.35,401,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/kruopos/ankstiniai/skaldyti-raudonieji-lesiai-rimi-400-g/p/816261"],["Raudonieji lęšiai su luobele RIMI, 400 g",1.35,401,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/kruopos/ankstiniai/raudonieji-lesiai-su-luobele-rimi-400-g/p/816266"]],"beans":[["Raudonosios pupelės RIMI, 400 g / 240 g",0.99,240,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/konservuotas-maistas/konservuoti-avinzirniai-pupeles-ir-lesiai/raudonosios-pupeles-rimi-400-g-240-g/p/808449"],["Raudonosios pupelės SKANĖJA, 500 g",2.29,300,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/kruopos/ankstiniai/raudonosios-pupeles-skaneja-500-g/p/146732"],["Kons. raudonosios pupelės HEINZ KIDNEY, 400 g",1.89,240,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/konservuotas-maistas/konservuoti-avinzirniai-pupeles-ir-lesiai/kons-raudonosios-pupeles-heinz-kidney-400-g/p/161073"],["Raudonosios pupelės BONDUELLE KIDNEY 400/250g",2.29,250,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/konservuotas-maistas/konservuoti-avinzirniai-pupeles-ir-lesiai/raudonosios-pupeles-bonduelle-kidney-400-250g/p/101302"]],"olive":[["Alyvuogių aliejus RIMI EXTRA LIGHT, 750ml",8.99,690,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/aliejus-ir-actas/alyvuogiu-aliejus/alyvuogiu-aliejus-rimi-extra-light-750ml/p/803242"],["Alyvuogių aliejus RIMI, 1 l",12.39,920,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/aliejus-ir-actas/alyvuogiu-aliejus/alyvuogiu-aliejus-rimi-1-l/p/808051"],["Alyvuogių aliejus RIMI MILD TASTE, 500ml",6.29,460,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/aliejus-ir-actas/alyvuogiu-aliejus/alyvuogiu-aliejus-rimi-mild-taste-500ml/p/803241"],["Alyvuogių aliejus RIMI EXTRA VIRGIN, 750ml",10.49,690,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/aliejus-ir-actas/alyvuogiu-aliejus/alyvuogiu-aliejus-rimi-extra-virgin-750ml/p/803240"],["Ypač tyras alyvuogių aliejus RIMI, 1l",14.99,920,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/aliejus-ir-actas/alyvuogiu-aliejus/ypac-tyras-alyvuogiu-aliejus-rimi-1l/p/808052"],["Ypač grynas alyvuogių aliejus CLASSICO, 750ml",11.49,690,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/aliejus-ir-actas/alyvuogiu-aliejus/ypac-grynas-alyvuogiu-aliejus-classico-750ml/p/180835"],["Alyvuogių aliejus BORGES EXTRA LIGHT, 0,75l",12.99,690,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/aliejus-ir-actas/alyvuogiu-aliejus/alyvuogiu-aliejus-borges-extra-light-0-75l/p/147764"],["Alyvuogių aliejus BORGES EXTRA VIRGIN, 0,75l",13.99,690,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/aliejus-ir-actas/alyvuogiu-aliejus/alyvuogiu-aliejus-borges-extra-virgin-0-75l/p/147762"]],"rapeseed":[["Rapsų aliejus RIMI SMART, 1 l",1.59,920,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/aliejus-ir-actas/rapsu-aliejus/rapsu-aliejus-rimi-smart-1-l/p/804295"],["Rapsų aliejus RIMI, 1l",2.99,920,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/aliejus-ir-actas/rapsu-aliejus/rapsu-aliejus-rimi-1l/p/801706"],["OBELIŲ rapsų aliejus, 0,9 l",2.89,757,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/aliejus-ir-actas/rapsu-aliejus/obeliu-rapsu-aliejus-0-9-l/p/146745"],["Šal.spaud.neraf.rapsų aliejus NATURALISIMO,1l",3.99,920,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/aliejus-ir-actas/rapsu-aliejus/sal-spaud-neraf-rapsu-aliejus-naturalisimo-1l/p/1006908"],["Tr. sk. rapsų aliejus SALLING PRINCIP, 250 ml",5.99,230,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/aliejus-ir-actas/rapsu-aliejus/tr-sk-rapsu-aliejus-salling-princip-250-ml/p/818847"],["Ek. puršk. rapsų aliejus BIONATURALIS, 200 ml",5.29,184,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/aliejus-ir-actas/rapsu-aliejus/ek-pursk-rapsu-aliejus-bionaturalis-200-ml/p/1022377"]],"walnuts":[["Gliaudyti graikiniai riešutai AWAKE, 150 g",1.65,150,"https://www.rimi.lt/e-parduotuve/lt/produktai/saldumynai-ir-uzkandziai/dziovinti-vaisiai-ir-riesutai/dziovinti-riesutai-pakuotese/gliaudyti-graikiniai-riesutai-awake-150-g/p/804398"],["Graikiniai riešutai RIMI, 700 g",8.59,700,"https://www.rimi.lt/e-parduotuve/lt/produktai/saldumynai-ir-uzkandziai/dziovinti-vaisiai-ir-riesutai/dziovinti-riesutai-pakuotese/graikiniai-riesutai-rimi-700-g/p/814918"],["Graikiniai riešutai ARIMEX, 100g",1.99,100,"https://www.rimi.lt/e-parduotuve/lt/produktai/saldumynai-ir-uzkandziai/dziovinti-vaisiai-ir-riesutai/dziovinti-riesutai-pakuotese/graikiniai-riesutai-arimex-100g/p/147055"],["Sūris LANDANA su graikiniais riešutais, 200 g",5.39,200,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/suris/fermentiniai-suriai/suris-landana-su-graikiniais-riesutais-200-g/p/4001413"],["Gliaudyti graikiniai riešutai, 150g",7.69,150,"https://www.rimi.lt/e-parduotuve/lt/produktai/saldumynai-ir-uzkandziai/dziovinti-vaisiai-ir-riesutai/dziovinti-riesutai-pakuotese/gliaudyti-graikiniai-riesutai-150g/p/170109"]],"seeds":[["Saulėgrąžų sėklų branduoliai AWAKE, 150g",0.81,150,"https://www.rimi.lt/e-parduotuve/lt/produktai/saldumynai-ir-uzkandziai/dziovinti-vaisiai-ir-riesutai/saulegrazos-moliugu-ir-kitos-seklos/saulegrazu-seklu-branduoliai-awake-150g/p/804397"],["Lukštentos saulėgrąžų sėklos ARIMEX, 200g",1.49,200,"https://www.rimi.lt/e-parduotuve/lt/produktai/saldumynai-ir-uzkandziai/dziovinti-vaisiai-ir-riesutai/lukstentos-saulegrazu-seklos-arimex-200g/p/147062"],["Lukštentos saulėgrąžų sėklos PIGIAU, 500g",3.99,500,"https://www.rimi.lt/e-parduotuve/lt/produktai/saldumynai-ir-uzkandziai/dziovinti-vaisiai-ir-riesutai/saulegrazos-moliugu-ir-kitos-seklos/lukstentos-saulegrazu-seklos-pigiau-500g/p/123617"]],"pb":[["Traškus žemės riešutų kremas RIMI, 1 kg",6.29,1000,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/konservuotas-maistas/sokolado-ir-riesutu-kremai/traskus-zemes-riesutu-kremas-rimi-1-kg/p/814193"],["Žemės riešutų kremas RIMI SMART, 350 g",2.49,350,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/konservuotas-maistas/sokolado-ir-riesutu-kremai/zemes-riesutu-kremas-rimi-smart-350-g/p/817126"],["Traškus žemės riešutų kremas ULDUKAS, 1 kg",7.69,1000,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/konservuotas-maistas/sokolado-ir-riesutu-kremai/traskus-zemes-riesutu-kremas-uldukas-1-kg/p/197363"],["Žemės riešutų kremas ALVO, 1 kg",7.99,1000,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/konservuotas-maistas/sokolado-ir-riesutu-kremai/zemes-riesutu-kremas-alvo-1-kg/p/1004578"],["Žemės riešutų kremas ALVO, 500 g",4.69,500,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/konservuotas-maistas/sokolado-ir-riesutu-kremai/zemes-riesutu-kremas-alvo-500-g/p/1004579"],["Traškus žemės riešutų kremas ALVO, 500 g",4.69,500,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/konservuotas-maistas/sokolado-ir-riesutu-kremai/traskus-zemes-riesutu-kremas-alvo-500-g/p/1024370"],["Švelnus žemės riešutų kremas ULDUKAS, 300 g",3.89,300,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/konservuotas-maistas/sokolado-ir-riesutu-kremai/svelnus-zemes-riesutu-kremas-uldukas-300-g/p/197350"],["Traškus žemės riešutų kremas ULDUKAS, 300 g",3.89,300,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/konservuotas-maistas/sokolado-ir-riesutu-kremai/traskus-zemes-riesutu-kremas-uldukas-300-g/p/197358"]],"honey":[["Įvairių augalų žiedų medus RIMI SMART, 1kg",4.99,1000,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/konservuotas-maistas/medus/ivairiu-augalu-ziedu-medus-rimi-smart-1kg/p/804962"],["Skystas KORIO medus, 500 g",3.79,500,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/konservuotas-maistas/medus/skystas-korio-medus-500-g/p/183026"],["Medus, 700 g",6.39,700,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/konservuotas-maistas/medus/medus-700-g/p/180684"],["LIETUVOS BITININKO medus, 700 g",6.89,700,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/konservuotas-maistas/medus/lietuvos-bitininko-medus-700-g/p/188149"],["Įvairių augalų žiedų medus RIMI, 500 g",4.99,500,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/konservuotas-maistas/medus/ivairiu-augalu-ziedu-medus-rimi-500-g/p/803077"],["Pyragas Medaus, 1kg",4.0,400,"https://www.rimi.lt/e-parduotuve/lt/produktai/rimi-konditerija-ir-kulinarija/konditerijos-gaminiai/pyragai-ir-vyniotiniai/pyragas-medaus-1kg/p/939157"],["Įvairių augalų žiedų medus RIMI, 300 g",3.49,300,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/konservuotas-maistas/medus/ivairiu-augalu-ziedu-medus-rimi-300-g/p/803076"],["Medaus pyragas LIETUVOS KEPĖJAS, 1kg",12.99,1000,"https://www.rimi.lt/e-parduotuve/lt/produktai/rimi-konditerija-ir-kulinarija/konditerijos-gaminiai/pyragai-ir-vyniotiniai/medaus-pyragas-lietuvos-kepejas-1kg/p/917134"]],"hummus":[["Humusas SALLING, 310 g",2.19,310,"https://www.rimi.lt/e-parduotuve/lt/produktai/rimi-konditerija-ir-kulinarija/paruostas-maistas-kulinarija/uzkandziai/humusas-salling-310-g/p/817506"],["Humusas TRADICINIS GOURMET GREEN, 150 g",1.69,150,"https://www.rimi.lt/e-parduotuve/lt/produktai/rimi-konditerija-ir-kulinarija/paruostas-maistas-kulinarija/uzkandziai/humusas-tradicinis-gourmet-green-150-g/p/4004368"],["Humusas RIMI PLANET su karameliz.svogūn.,180g",2.55,180,"https://www.rimi.lt/e-parduotuve/lt/produktai/rimi-konditerija-ir-kulinarija/paruostas-maistas-kulinarija/uzkandziai/humusas-rimi-planet-su-karameliz-svogun-180g/p/813670"],["Humusas RIMI PLANET su alyvuogėmis  180g",2.55,180,"https://www.rimi.lt/e-parduotuve/lt/produktai/rimi-konditerija-ir-kulinarija/paruostas-maistas-kulinarija/uzkandziai/humusas-rimi-planet-su-alyvuogemis-180g/p/812946"],["Humusas RIMI PLANET su baklažanais 180g",2.55,180,"https://www.rimi.lt/e-parduotuve/lt/produktai/rimi-konditerija-ir-kulinarija/paruostas-maistas-kulinarija/uzkandziai/humusas-rimi-planet-su-baklazanais-180g/p/812947"],["Humusas RIMI PLANET su burokėliais, 180 g",2.55,180,"https://www.rimi.lt/e-parduotuve/lt/produktai/rimi-konditerija-ir-kulinarija/paruostas-maistas-kulinarija/uzkandziai/humusas-rimi-planet-su-burokeliais-180-g/p/813664"],["Humusas RIMI PLANET su mangais,kokosais, 180g",2.55,180,"https://www.rimi.lt/e-parduotuve/lt/produktai/rimi-konditerija-ir-kulinarija/paruostas-maistas-kulinarija/uzkandziai/humusas-rimi-planet-su-mangais-kokosais-180g/p/813675"],["Humusas su džiovintais pomidorais, 200 g",2.95,200,"https://www.rimi.lt/e-parduotuve/lt/produktai/rimi-konditerija-ir-kulinarija/paruostas-maistas-kulinarija/uzkandziai/humusas-su-dziovintais-pomidorais-200-g/p/4006594"]],"banana":[["Bananai Cavendish, 20+cm , 1kg",1.15,1000,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/vaisiai-ir-uogos/bananai/bananai-cavendish-20-cm-1kg/p/270939"],["Šaldyti bananai pieniškame šokolade, 130 g",5.99,130,"https://www.rimi.lt/e-parduotuve/lt/produktai/saldytas-maistas/saldytos-darzoves-vaisiai-ir-uogos/saldyti-vaisiai-ir-uogos/saldyti-bananai-pieniskame-sokolade-130-g/p/4011186"]],"apple":[["Obuoliai Champion, 1 kl., 1 kg",0.49,551,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/vaisiai-ir-uogos/obuoliai-/obuoliai-champion-1-kl-1-kg/p/269163"],["Obuoliai RED JONAPRINCE, 1 kl.,1kg",0.87,547,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/vaisiai-ir-uogos/obuoliai-/obuoliai-red-jonaprince-1-kl-1kg/p/955108"],["Obuoliai ROYAL GALA,1 kg",1.24,541,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/vaisiai-ir-uogos/obuoliai-/obuoliai-royal-gala-1-kg/p/269153"],["Obuol. GOLDEN DELICIOUS RIMI,1 kl, kg",1.24,541,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/vaisiai-ir-uogos/obuoliai-/obuol-golden-delicious-rimi-1-kl-kg/p/297240"],["Fas. Lietuv. obuoliai LOBO, 2 kl.,1 kg",4.98,2000,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/vaisiai-ir-uogos/obuoliai-/fas-lietuv-obuoliai-lobo-2-kl-1-kg/p/943661"],["Liet.obuol. BOGATYR, 2kl, kg",5.7,2201,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/vaisiai-ir-uogos/obuoliai-/liet-obuol-bogatyr-2kl-kg/p/931924"],["Liet. fas. obuoliai SPARTAN, 2kl, 1kg ",5.31,2050,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/vaisiai-ir-uogos/obuoliai-/liet-fas-obuoliai-spartan-2kl-1kg-/p/945750"],["Obuoliai KANZI, 1 kl., 1 kg",1.53,548,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/vaisiai-ir-uogos/obuoliai-/obuoliai-kanzi-1-kl-1-kg/p/281840"]],"berries":[["Užšaldytas uogų mišinys RIMI, 400g",3.99,400,"https://www.rimi.lt/e-parduotuve/lt/produktai/saldytas-maistas/saldytos-darzoves-vaisiai-ir-uogos/saldyti-vaisiai-ir-uogos/uzsaldytas-uogu-misinys-rimi-400g/p/812712"]],"carrot":[["Plautos morkos, kg",0.36,522,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/morkos/plautos-morkos-kg/p/272768"],["Lietuviškos morkos RIMI, 1 kg",0.95,1000,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/morkos/lietuviskos-morkos-rimi-1-kg/p/901581"],["Fasuotos plautos morkos NKP, 1 kg",1.65,1000,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/morkos/fasuotos-plautos-morkos-nkp-1-kg/p/283085"],["Fasuotos plautos morkos NKP, 500 g",0.89,500,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/morkos/fasuotos-plautos-morkos-nkp-500-g/p/934118"],["Šald. morkų kub. ir žirn. mišinys RIMI, 400 g",1.09,401,"https://www.rimi.lt/e-parduotuve/lt/produktai/saldytas-maistas/saldytos-darzoves-vaisiai-ir-uogos/saldytos-darzoves-ir-darzoviu-misiniai/sald-morku-kub-ir-zirn-misinys-rimi-400-g/p/811173"],["Pjaustyti morkų šiaudeliai FIT & EASY, 200 g",0.79,200,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/salotos-ir-ju-misiniai/pjaustyti-morku-siaudeliai-fit-easy-200-g/p/4005350"],["Ob., banan., brašk., morkų tyr. KUBUŠ, 100 g",0.99,100,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/konservuotas-maistas/uogienes-dzemai-ir-tyres/ob-banan-brask-morku-tyr-kubus-100-g/p/164454"]],"beet":[["Lietuviški burokėliai, 1 kg",0.24,533,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/burokeliai-ir-kiti-sakniavaisiai/lietuviski-burokeliai-1-kg/p/920730"],["Burokėliai šaltib. KĖDAINIŲ KONSERVAI, 480 g",1.59,480,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/konservuotas-maistas/konservuoti-burokeliai/burokeliai-saltib-kedainiu-konservai-480-g/p/1000251"],["Korėjietiški burokėliai 400g",1.69,500,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/apdorotos-darzoves/korejietiski-burokeliai-400g/p/900704"],["Keptų burok. sal. KĖDAINIŲ KONSERVAI, 480 g",1.99,480,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/konservuotas-maistas/konservuoti-patiekalai/keptu-burok-sal-kedainiu-konservai-480-g/p/1023109"],["Burokėlių karpačio, 400 g",1.75,400,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/apdorotos-darzoves/burokeliu-karpacio-400-g/p/900707"],["Mar. silkių gab. su burok. RIMI SMART, 200 g",1.25,200,"https://www.rimi.lt/e-parduotuve/lt/produktai/mesa-ir-zuvis-/apdorotos-zuvies-gaminiai/silkes-ir-ju-gaminiai-/mar-silkiu-gab-su-burok-rimi-smart-200-g/p/816487"],["Marin. burokėliai SPILVA KLASIKA, 570g/330g",2.59,330,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/konservuotas-maistas/konservuoti-burokeliai/marin-burokeliai-spilva-klasika-570g-330g/p/138219"],["Burok., lęš. makaronai SALLING FUSILLI, 250 g",1.99,250,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/funkcinis-maistas/be-glitimo/burok-les-makaronai-salling-fusilli-250-g/p/816794"]],"cabbage":[["Lietuviški švieži baltagūžiai kopūstai, 1 kg",0.97,1406,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/kopustai/lietuviski-sviezi-baltaguziai-kopustai-1-kg/p/244676"],["Švieži kopūstai, 1 kg",2.78,2000,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/kopustai/sviezi-kopustai-1-kg/p/283755"],["Kininiai kopūstai, 1 kg",1.85,1000,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/kopustai/kininiai-kopustai-1-kg/p/291290"],["Raug. kopūstai maiš. KVEDARŲ ŪKIS, 1 kg",1.99,1000,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/apdorotos-darzoves/raug-kopustai-mais-kvedaru-ukis-1-kg/p/957668"],["Kopūstai su morkomis marinate RIMI, 900 g",1.99,900,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/apdorotos-darzoves/kopustai-su-morkomis-marinate-rimi-900-g/p/929293"],["Kopūstai korėjietiškai, 400 g",1.49,500,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/apdorotos-darzoves/kopustai-korejietiskai-400-g/p/900703"],["Šviežių kopūstų barščiai RIMI, 460 g",1.99,460,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/konservuotas-maistas/konservuotos-sriubos/svieziu-kopustu-barsciai-rimi-460-g/p/815868"],["Trošk.kopūstai su rūkytomis dešrelėmis, 300 g",1.69,300,"https://www.rimi.lt/e-parduotuve/lt/produktai/rimi-konditerija-ir-kulinarija/paruostas-maistas-kulinarija/pagrindiniai-patiekalai-/trosk-kopustai-su-rukytomis-desrelemis-300-g/p/994279"]],"tomato":[["Lietuviški pomidorai, 2 kl., kg",1.74,672,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/pomidorai/lietuviski-pomidorai-2-kl-kg/p/244594"],["Slyviniai pomidorai RIMI 1 kl., 500 g",1.79,500,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/pomidorai/slyviniai-pomidorai-rimi-1-kl-500-g/p/295321"],["Pomidorų PASSATA RIMI, 500 g",1.99,500,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/padazai-garstycios-krienai/padazai-maisto-ruosimui-ir-makaronams/pomidoru-passata-rimi-500-g/p/811905"],["Raudonieji pomidorai su šakele, 1 kl., 1 kg",3.11,779,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/pomidorai/raudonieji-pomidorai-su-sakele-1-kl-1-kg/p/268771"],["Juodieji pomidorai KUMATO (57-67 mm),1kl.,1kg",2.28,549,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/pomidorai/juodieji-pomidorai-kumato-57-67-mm-1kl-1kg/p/295995"],["Slyviniai pomidorai RIMI ECO, 500 g",2.29,500,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/pomidorai/slyviniai-pomidorai-rimi-eco-500-g/p/965932"],["Lietuviški slyv. pomidorai RIMI,kl.1, 500 g",2.69,500,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/pomidorai/lietuviski-slyv-pomidorai-rimi-kl-1-500-g/p/815533"],["Mažieji slyviniai pomidorai 1kl, 250 g",1.49,250,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/pomidorai/mazieji-slyviniai-pomidorai-1kl-250-g/p/296781"]],"cucumber":[["Lietuviškas ilgavaisis agurkas RIMI, 1 vnt",0.95,250,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/agurkai/lietuviskas-ilgavaisis-agurkas-rimi-1-vnt/p/975432"],["Lietuviški trumpavaisiai agurkai, kg",3.91,800,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/agurkai/lietuviski-trumpavaisiai-agurkai-kg/p/245039"],["Pusilgiai agurkai Rimi 400g",1.99,400,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/agurkai/pusilgiai-agurkai-rimi-400g/p/996395"],["Marin. agurkai RIMI, 2 - 5 cm, 670 g / 370 g",1.99,370,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/konservuotas-maistas/konservuoti-agurkai/marin-agurkai-rimi-2---5-cm-670-g-370-g/p/802446"],["Marin. agurkai RIMI, 3 - 6 cm, 670 g / 370 g",2.49,370,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/konservuotas-maistas/konservuoti-agurkai/marin-agurkai-rimi-3---6-cm-670-g-370-g/p/802445"],["Marin. agurkai RIMI, 2 - 5 cm, 340 g / 180 g",1.89,180,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/konservuotas-maistas/konservuoti-agurkai/marin-agurkai-rimi-2---5-cm-340-g-180-g/p/802447"],["Tep. varškė belakt. su agurk. RYTAS, 17%,130g",1.39,130,"https://www.rimi.lt/e-parduotuve/lt/produktai/pieno-produktai-ir-kiausiniai/suris/tepamieji-suriai/tep-varske-belakt-su-agurk-rytas-17-130g/p/904701"],["Marin. agurkai RIMI su medumi, 350 g / 180 g",1.99,180,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/konservuotas-maistas/konservuoti-agurkai/marin-agurkai-rimi-su-medumi-350-g-180-g/p/812101"]],"onion":[["Svogūnai d.40-60mm, kg",0.26,578,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/svogunai-porai-ir-cesnakai/svogunai-d-40-60mm-kg/p/937069"],["Fasuoti lietuviški svogūnai, 1kg",0.99,1000,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/svogunai-porai-ir-cesnakai/fasuoti-lietuviski-svogunai-1kg/p/937071"],["Žemės riešutai su svogūnais JĖGA, 200g",1.59,200,"https://www.rimi.lt/e-parduotuve/lt/produktai/saldumynai-ir-uzkandziai/dziovinti-vaisiai-ir-riesutai/dziovinti-riesutai-pakuotese/zemes-riesutai-su-svogunais-jega-200g/p/152531"],["Marin. valgomieji svogūn. RIMI, 320 g / 190 g",1.59,190,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/konservuotas-maistas/kitos-konservuotos-darzoves/marin-valgomieji-svogun-rimi-320-g-190-g/p/812826"],["Krekeriai su svogūnais RIMI, 100 g",0.89,100,"https://www.rimi.lt/e-parduotuve/lt/produktai/saldumynai-ir-uzkandziai/uzkandziai/kiti-uzkandziai/krekeriai-su-svogunais-rimi-100-g/p/817886"],["Silkių filė su marin. svogūnais EDEGA, 500 g",4.49,500,"https://www.rimi.lt/e-parduotuve/lt/produktai/mesa-ir-zuvis-/apdorotos-zuvies-gaminiai/silkes-ir-ju-gaminiai-/silkiu-file-su-marin-svogunais-edega-500-g/p/295834"],["Konservuoti svogūnėliai KKF, 330 g/190 g",1.99,190,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/konservuotas-maistas/kitos-konservuotos-darzoves/konservuoti-svoguneliai-kkf-330-g-190-g/p/174401"],["BAJORIŠKA silkių filė su svogūnais EDEGA,320g",3.49,320,"https://www.rimi.lt/e-parduotuve/lt/produktai/mesa-ir-zuvis-/apdorotos-zuvies-gaminiai/silkes-ir-ju-gaminiai-/bajoriska-silkiu-file-su-svogunais-edega-320g/p/902765"]],"pepper":[["Raud. saldžiosios paprikos (80+),1kl,1kg",1.8,516,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/paprikos/raud-saldziosios-paprikos-80-1kl-1kg/p/269167"],["Geltonos saldžiosios paprikos (80+mm),1kl,1kg",1.57,450,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/paprikos/geltonos-saldziosios-paprikos-80-mm-1kl-1kg/p/209926"],["Virtos bulvės su paprika RTE, 430g",1.79,430,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/apdorotos-darzoves/virtos-bulves-su-paprika-rte-430g/p/974340"],["Džiūvėsėliai su paprika CITY TASTE, 350g",1.99,350,"https://www.rimi.lt/e-parduotuve/lt/produktai/duonos-gaminiai-/duonos-pakaitalai/malti-dziuveseliai/dziuveseliai-su-paprika-city-taste-350g/p/1013005"],["Žemės riešutai su paprika JĖGA, 200g",1.59,200,"https://www.rimi.lt/e-parduotuve/lt/produktai/saldumynai-ir-uzkandziai/dziovinti-vaisiai-ir-riesutai/dziovinti-riesutai-pakuotese/zemes-riesutai-su-paprika-jega-200g/p/152152"],["Pailgos saldžios paprikos RIMI,1kl.,250g",1.99,250,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/paprikos/pailgos-saldzios-paprikos-rimi-1kl-250g/p/900263"],["Mažosios paprikos RIMI, 1 kl., 200 g",1.89,200,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/paprikos/mazosios-paprikos-rimi-1-kl-200-g/p/296792"],["Paprikų mišinys RIMI, 1 kl., 350 g",3.49,350,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/paprikos/papriku-misinys-rimi-1-kl-350-g/p/298572"]],"mushroom":[["Pievagrybiai GRILL, 500 g",2.69,500,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/grybai/pievagrybiai-grill-500-g/p/966993"],["Pievagrybiai RIMI, 250 g",1.55,250,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/grybai/pievagrybiai-rimi-250-g/p/297915"],["Marin. pievagrybiai RIMI SMART, 500 g / 268 g",1.99,268,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/konservuotas-maistas/konservuoti-grybai/marin-pievagrybiai-rimi-smart-500-g-268-g/p/808970"],["Pievagrybiai, 250g",1.55,200,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/grybai/pievagrybiai-250g/p/4010709"],["Mar. pievagrybiai RIMI SMART, 280 g / 165 g",1.79,165,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/konservuotas-maistas/konservuoti-grybai/mar-pievagrybiai-rimi-smart-280-g-165-g/p/815770"],["Marin. pievagrybiai RINKTINIAI KKF, 480/255g",3.99,255,"https://www.rimi.lt/e-parduotuve/lt/produktai/bakaleja/konservuotas-maistas/konservuoti-grybai/marin-pievagrybiai-rinktiniai-kkf-480-255g/p/185051"]],"broccoli":[["Greitai užšaldyti brokoliai RIMI, 400 g",1.89,400,"https://www.rimi.lt/e-parduotuve/lt/produktai/saldytas-maistas/saldytos-darzoves-vaisiai-ir-uogos/saldytos-darzoves-ir-darzoviu-misiniai/greitai-uzsaldyti-brokoliai-rimi-400-g/p/808638"]],"spinach":[["Špinatai, 200 g",1.69,200,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/salotos-ir-ju-misiniai/spinatai-200-g/p/909368"]],"mixveg":[["Šald. morkų kub. ir žirn. mišinys RIMI, 400 g",1.09,401,"https://www.rimi.lt/e-parduotuve/lt/produktai/saldytas-maistas/saldytos-darzoves-vaisiai-ir-uogos/saldytos-darzoves-ir-darzoviu-misiniai/sald-morku-kub-ir-zirn-misinys-rimi-400-g/p/811173"],["Šald. pavasariškas darž. mišinys RIMI, 400 g",1.09,401,"https://www.rimi.lt/e-parduotuve/lt/produktai/saldytas-maistas/saldytos-darzoves-vaisiai-ir-uogos/saldytos-darzoves-ir-darzoviu-misiniai/sald-pavasariskas-darz-misinys-rimi-400-g/p/801516"],["Šaldytas trijų daržovių mišinys RIMI, 400 g",1.19,401,"https://www.rimi.lt/e-parduotuve/lt/produktai/saldytas-maistas/saldytos-darzoves-vaisiai-ir-uogos/saldytos-darzoves-ir-darzoviu-misiniai/saldytas-triju-darzoviu-misinys-rimi-400-g/p/811170"],["Daržovių mišinys FIT & EASY COLESLAW, 300 g",1.18,300,"https://www.rimi.lt/e-parduotuve/lt/produktai/vaisiai-darzoves-ir-geles/darzoves-ir-grybai/salotos-ir-ju-misiniai/darzoviu-misinys-fit-easy-coleslaw-300-g/p/996195"],["Šaldytų daržovių mišinys HORTEX MEXICO, 400 g",1.59,401,"https://www.rimi.lt/e-parduotuve/lt/produktai/saldytas-maistas/saldytos-darzoves-vaisiai-ir-uogos/saldytos-darzoves-ir-darzoviu-misiniai/saldytu-darzoviu-misinys-hortex-mexico-400-g/p/224240"],["Šaldytų daržovių mišinys HORTEX VIP MIX, 400g",1.79,400,"https://www.rimi.lt/e-parduotuve/lt/produktai/saldytas-maistas/saldytos-darzoves-vaisiai-ir-uogos/saldytos-darzoves-ir-darzoviu-misiniai/saldytu-darzoviu-misinys-hortex-vip-mix-400g/p/223910"],["Šald. darž. mišinys BONDUELLE 4 SEASONS, 400g",1.99,400,"https://www.rimi.lt/e-parduotuve/lt/produktai/saldytas-maistas/saldytos-darzoves-vaisiai-ir-uogos/saldytos-darzoves-ir-darzoviu-misiniai/sald-darz-misinys-bonduelle-4-seasons-400g/p/4008649"],["Šald. havajiet. daržovių mišinys RIMI, 400 g",3.49,400,"https://www.rimi.lt/e-parduotuve/lt/produktai/saldytas-maistas/saldytos-darzoves-vaisiai-ir-uogos/saldytos-darzoves-ir-darzoviu-misiniai/sald-havajiet-darzoviu-misinys-rimi-400-g/p/801518"]]}};
+const STORES = [
+  {id:"maxima", n:"Maxima", d:"Kainos iš Barbora e. parduotuvės", live:true},
+  {id:"rimi",   n:"Rimi",   d:"Kainos iš Rimi e. parduotuvės", live:true},
+  {id:"lidl",   n:"Lidl",   d:"Kainų internete neskelbia"},
+  {id:"iki",    n:"Iki",    d:"Kainų internete neskelbia"},
+  {id:"norfa",  n:"Norfa",  d:"Kainų internete neskelbia"},
+];
+const MEAL = {b:"Pusryčiai", l:"Pietūs", d:"Vakarienė", s:"Užkandis"};
+const DAYS = ["Pirmadienis","Antradienis","Trečiadienis","Ketvirtadienis","Penktadienis","Šeštadienis","Sekmadienis"];
+const SHARES = {3:{b:.30,l:.40,d:.30}, 4:{b:.25,l:.35,d:.30,s:.10}};
+const AISLES = ["Daržovės ir vaisiai","Mėsa ir žuvis","Pieno produktai ir kiaušiniai","Kruopos ir duona","Bakalėja"];
+
+// ---------- helpers ----------
+function nutrG(items){ const o={k:0,p:0,c:0,f:0}; items.forEach(([k,g])=>{const x=I[k], q=g/100; o.k+=x[2]*q;o.p+=x[3]*q;o.c+=x[4]*q;o.f+=x[5]*q;}); return o; }
+function nutr(r, f){ return nutrG(r.i.map(([k,g])=>[k,g*f])); }
+// Protein foods get their own scale factor so a meal can hit both its calorie and protein share.
+const PROT = new Set(["chicken","pork","beef","salmon","herring","cod","tuna","eggs","curd","yogurt","tofu","lentils","chickpeas","beans"]);
+const recipeOf = id => R.find(x=>x.id===id);
+function mealGrams(m){ return recipeOf(m.id).i.map(([k,g]) => [k, g*(PROT.has(k)?m.pf:m.cf)]); }
+const mealNutr = m => nutrG(mealGrams(m));
+function rng(seed){ return function(){ seed|=0; seed=seed+0x6D2B79F5|0; let t=Math.imul(seed^seed>>>15,1|seed); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+function hash(s){ let h=2166136261; for(const ch of s){ h^=ch.charCodeAt(0); h=Math.imul(h,16777619);} return (h>>>0)/4294967296; }
+function shuffle(a, rnd){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+const eur = v => v.toFixed(2).replace(".", ",") + "\u00a0€";
+const nf = v => Math.round(v).toLocaleString("lt-LT");
+const r0 = v => Math.round(v);
+const fmtG = g => g >= 1000 ? (g/1000).toFixed(g>=10000?0:1).replace(/\.0$/,"").replace(".", ",") + " kg" : r0(g) + " g";
+const $ = id => document.getElementById(id);
+function prod(n){ const t=n%10, h=n%100; return (t===1&&h!==11)?"produktas":(t>=2&&t<=9&&(h<10||h>20))?"produktai":"produktų"; }
+document.documentElement.lang = "lt";
+function esc(s){ return String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+// ---------- state ----------
+let state = { profile:null, target:null, plan:null, seed:Date.now()%100000, store:"maxima", tab:"plan", done:new Set() };
+try { const s = JSON.parse(localStorage.getItem("krepselis") || "null"); if (s) { if (s.store && STORES.some(z=>z.id===s.store)) state.store = s.store; if (s.form) restoreForm(s.form); } } catch(e) {}
+
+function readForm(){
+  const v = n => document.querySelector(`input[name=${n}]:checked`)?.value;
+  const num = (id, lo, hi, d) => { const x = parseFloat($(id).value); return isFinite(x) ? Math.min(hi, Math.max(lo, x)) : d; };
+  return { sex:v("sex"), age:num("age",16,90,30), people:Math.round(num("people",1,8,1)), height:num("height",130,220,170), weight:num("weight",35,200,70),
+    act:parseFloat($("activity").value), goal:v("goal"), diet:v("diet"), ex:[...document.querySelectorAll("input[name=ex]:checked")].map(x=>x.value), mpd:+v("mpd"), prep:v("prep")!=="0" };
+}
+function restoreForm(f){
+  const set = (n,val) => { const el = document.querySelector(`input[name=${n}][value="${val}"]`); if (el) el.checked = true; };
+  ["sex","goal","diet","mpd"].forEach(n => f[n] != null && set(n, f[n]));
+  ["age","people","height","weight"].forEach(id => f[id] != null && ($(id).value = f[id]));
+  if (f.act) $("activity").value = String(f.act);
+  if (f.prep != null) set("prep", f.prep ? "1" : "0");
+  document.querySelectorAll("input[name=ex]").forEach(x => x.checked = (f.ex||[]).includes(x.value));
+}
+function save(){ try { localStorage.setItem("krepselis", JSON.stringify({ store:state.store, form:state.profile })); } catch(e) {} }
+
+// ---------- targets ----------
+function computeTarget(p){
+  const bmr = 10*p.weight + 6.25*p.height - 5*p.age + (p.sex==="m" ? 5 : -161);
+  const tdee = bmr * p.act;
+  const adj = {lose:-0.18, keep:0, gain:0.10}[p.goal];
+  let kcal = tdee * (1 + adj);
+  const floor = p.sex==="m" ? 1500 : 1200;
+  kcal = Math.max(floor, Math.round(kcal/10)*10);
+  const protein = Math.round(p.weight * ({lose:1.8, keep:1.4, gain:1.8}[p.goal]));
+  const fat = Math.round(kcal*0.28/9);
+  const carbs = Math.max(0, Math.round((kcal - protein*4 - fat*9)/4));
+  return { kcal, protein, fat, carbs, bmr:Math.round(bmr), tdee:Math.round(tdee) };
+}
+
+// ---------- eligibility ----------
+const DIET_BLOCK = { all:"", pes:"m", veg:"mf", vgn:"mfdeh" };
+function eligible(type, p){
+  const block = new Set((DIET_BLOCK[p.diet] + p.ex.join("")).split("").filter(Boolean));
+  return R.filter(r => r.t===type && ![...r.flags].some(f => block.has(f)));
+}
+
+// ---------- plan ----------
+function sizeMeal(r, Kt, Pt){
+  const pr = nutrG(r.i.filter(([k])=>PROT.has(k))), ot = nutrG(r.i.filter(([k])=>!PROT.has(k)));
+  const clamp=(v,a,b)=>Math.min(b,Math.max(a,v)), rd=v=>Math.round(v*20)/20;
+  if (pr.k < 1 || ot.k < 1) { const f = clamp(Kt/r.base.k, .5, 2.5); return {pf:rd(f), cf:rd(f)}; }
+  const det = pr.p*ot.k - ot.p*pr.k;
+  let pf = Math.abs(det) > 1e-6 ? (Pt*ot.k - ot.p*Kt)/det : Kt/r.base.k;
+  pf = clamp(pf, .6, 3);
+  let cf = clamp((Kt - pf*pr.k)/ot.k, .3, 2.5);
+  // keep the dish recognisable: protein part at most 1.8x (or at least 1/1.8) of the rest
+  const MAXR = 1.8, ratio = pf / cf;
+  if (ratio > MAXR || ratio < 1/MAXR) { const g = Math.sqrt(pf*cf), q = Math.sqrt(ratio > 1 ? MAXR : 1/MAXR); pf = g*q; cf = g/q; }
+  const fix = Kt / (pf*pr.k + cf*ot.k); pf *= fix; cf *= fix; // calories take priority over protein
+  return {pf:rd(pf), cf:rd(cf)};
+}
+function sizeFor(r, ty){ const sh = SHARES[state.profile.mpd][ty]; return sizeMeal(r, state.target.kcal*sh, state.target.protein*sh); }
+// ---------- meal prep ----------
+const BATCHES = [
+  { days:[0,1,2],   when:"Sekmadienį",        forTxt:"pirmadieniui–trečiadieniui" },
+  { days:[3,4,5,6], when:"Trečiadienio vakare", forTxt:"ketvirtadieniui–sekmadieniui" },
+];
+const NOPREP = new Set(["b3","b7","d5"]);          // best cooked fresh
+const prepPool = pool => { const f = pool.filter(r => !NOPREP.has(r.id)); return f.length ? f : pool; };
+const batchOf = d => BATCHES.findIndex(b => b.days.includes(d));
+function swapBatch(d, mi){
+  const p = state.profile, bi = batchOf(d), m = state.plan.days[d].meals[mi];
+  const other = state.plan.days[BATCHES[1-bi].days[0]].meals[mi].id;
+  const pool = prepPool(eligible(m.ty, p)).filter(r => r.id !== m.id);
+  if (!pool.length) { toast("Kitų variantų (" + MEAL[m.ty].toLowerCase() + ") pagal jūsų pasirinkimus nėra"); return; }
+  pool.sort((a,b) => (a.id===other) - (b.id===other) || hash(a.id+Date.now()) - hash(b.id+Date.now()));
+  const r = pool[0], size = sizeFor(r, m.ty);
+  BATCHES[bi].days.forEach(dd => Object.assign(state.plan.days[dd].meals[mi], { id:r.id }, size));
+  toast(`Pakeista visoms partijos dienoms (${BATCHES[bi].forTxt})`);
+  render();
+}
+const GRAINS = ["buckwheat","rice","pasta","potato"];
+const rq = g => g < 50 ? Math.max(5, Math.round(g/5)*5) : Math.round(g/10)*10;
+const CHOP = ["onion","carrot","cabbage","pepper","mushroom","beet"];
+const FRESH = ["cucumber","tomato","banana","apple"];
+function renderPrep(){
+  const plan = state.plan, ppl = state.profile.people;
+  if (!plan.prep) { $("prep").innerHTML = ""; return; }
+  $("prep").innerHTML = BATCHES.map((b, bi) => {
+    const n = b.days.length * ppl;
+    const meals = plan.days[b.days[0]].meals;
+    const cook = [], quick = [];
+    meals.forEach(m => { const r = recipeOf(m.id); (r.min <= 5 ? quick : cook).push({ m, r }); });
+    cook.sort((a,b) => b.r.min - a.r.min);
+    const sum = {};
+    cook.forEach(({m}) => mealGrams(m).forEach(([k,g]) => sum[k] = (sum[k]||0) + g*n));
+    const listOf = keys => keys.filter(k => sum[k]).map(k => `<li><span>${esc(I[k][1])}</span><span class="num">${fmtG(rq(sum[k]))}</span></li>`).join("");
+    const boxes = cook.filter(({r}) => r.t==="l" || r.t==="d").length * n;
+    const jars = cook.filter(({r}) => r.t==="b" || r.t==="s").length * n;
+    const total = cook.reduce((a,{r}) => a + r.min, 0);
+    const recipes = cook.map(({m, r}, i) => {
+      const ing = mealGrams(m).map(([k,q]) => `<li><span>${esc(I[k][1])}</span><span class="num">${fmtG(rq(q*n))}</span></li>`).join("");
+      return `<article class="prec">
+        <div class="prec-h"><span class="pstep num">${i+1}</span><div><h4>${esc(r.n)}</h4>
+          <p class="mm">${MEAL[r.t]} · ${n} ${porc(n)} · apie ${r.min} min.</p></div></div>
+        <div class="rec">
+          <div><p class="rh">Visai partijai</p><ul>${ing}</ul></div>
+          <div><p class="rh">Gaminimas</p><ol>${r.s.map(x=>`<li>${esc(x)}</li>`).join("")}</ol>
+            <p class="pnote">Padalinkite į ${n} ${porc(n, true)}.</p></div>
+        </div>
+      </article>`;
+    }).join("");
+    const g = listOf(GRAINS), c = listOf(CHOP), fr = FRESH.filter(k => sum[k]).map(k => I[k][1].toLowerCase());
+    return `<section class="session">
+      <header class="session-h">
+        <div><p class="eyebrow">${bi+1} gaminimas</p><h3>${b.when}</h3><p class="mm">Maistas ${b.forTxt} · ${b.days.length} d.${ppl>1?` · ${ppl} asm.`:""}</p></div>
+        <dl class="facts num"><div><dt>Laikas</dt><dd>~${Math.round(total*0.7/5)*5} min.</dd></div><div><dt>Indeliai</dt><dd>${boxes}</dd></div>${jars?`<div><dt>Stiklainiai</dt><dd>${jars}</dd></div>`:""}</dl>
+      </header>
+      <div class="boxes">
+        ${g?`<div class="box"><p class="rh">Pirmiausia išvirkite</p><ul>${g}</ul></div>`:""}
+        ${c?`<div class="box"><p class="rh">Kol verda, supjaustykite</p><ul>${c}</ul></div>`:""}
+        <div class="box"><p class="rh">Laikymas</p><ul class="tips">
+          <li>Atvėsinkite ir per 2 val. sudėkite į šaldytuvą.</li>
+          <li>Šaldytuve laikykite iki ${b.days.length} d.${b.days.length>3?" Sekmadienio porcijas galite užšaldyti.":""}</li>
+          ${fr.length?`<li>${esc(fr.join(", "))}: pjaustykite valgymo dieną.</li>`:""}
+          <li>Grietinę ir padažus laikykite atskirai.</li>
+        </ul></div>
+      </div>
+      <h4 class="sub">Gaminimo eiga, pradedant ilgiausiai trunkančiu</h4>
+      <div class="precs">${recipes || '<p class="mm">Šiai partijai nieko gaminti nereikia.</p>'}</div>
+      ${quick.length?`<p class="quick"><b>Kasdien per 5 min.:</b> ${quick.map(({r})=>esc(r.n)).join(", ")}. Produktus nupirkite, o paruošite valgymo dieną.</p>`:""}
+    </section>`;
+  }).join("");
+}
+function porc(n, acc){ const t=n%10, h=n%100; if (t===1 && h!==11) return acc?"porciją":"porcija"; if (t>=2 && t<=9 && (h<10||h>20)) return "porcijos"; return "porcijų"; }
+
+function buildPlan(p, t, seed){
+  const rnd = rng(seed);
+  const shares = SHARES[p.mpd];
+  const types = Object.keys(shares);
+  const pools = {}; const missing = [];
+  types.forEach(ty => { pools[ty] = shuffle(eligible(ty,p), rnd); if (!pools[ty].length) missing.push(MEAL[ty]); });
+  if (missing.length) return { missing };
+  const mk = (ty, r) => ({ ty, id:r.id, ...sizeMeal(r, t.kcal*shares[ty], t.protein*shares[ty]) });
+  if (p.prep) {
+    // Batch cooking: one recipe per meal type per batch, prep-friendly recipes first.
+    const days = DAYS.map(() => ({ meals: [] }));
+    types.forEach(ty => {
+      const pool = prepPool(pools[ty]);
+      BATCHES.forEach((b, bi) => { const r = pool[bi % pool.length]; b.days.forEach(d => days[d].meals.push(mk(ty, r))); });
+    });
+    return { days, types, prep:true };
+  }
+  const days = DAYS.map((_, d) => ({ meals: types.map(ty => mk(ty, pools[ty][d % pools[ty].length])) }));
+  return { days, types };
+}
+function swapMeal(d, mi){
+  if (state.plan.prep) return swapBatch(d, mi);
+  const p = state.profile, m = state.plan.days[d].meals[mi];
+  const pool = eligible(m.ty, p);
+  if (pool.length < 2) { toast("Kitų variantų (" + MEAL[m.ty].toLowerCase() + ") pagal jūsų pasirinkimus nėra"); return; }
+  const used = {}; state.plan.days.forEach(day => day.meals.forEach(x => { if (x.ty===m.ty) used[x.id]=(used[x.id]||0)+1; }));
+  const cands = pool.filter(r => r.id !== m.id).sort((a,b) => (used[a.id]||0)-(used[b.id]||0) || hash(a.id+d+Date.now())-hash(b.id+d+Date.now()));
+  const r = cands[0];
+  m.id = r.id; Object.assign(m, sizeFor(r, m.ty));
+  render();
+}
+
+// ---------- shopping ----------
+function shoppingList(){
+  const need = {};
+  state.plan.days.forEach(day => day.meals.forEach(m => mealGrams(m).forEach(([k,g]) => need[k] = (need[k]||0) + g*state.profile.people)));
+  return Object.entries(need).map(([k,g]) => { const x = I[k]; const packs = Math.max(1, Math.ceil(g / x[7] - 0.05)); return { k, g, packs, x }; });
+}
+function offer(store, it){
+  const list = PRICES[store] && PRICES[store][it.k]; if (!list) return null;
+  let best = null;
+  for (const o of list) {
+    const packs = Math.max(1, Math.ceil(it.g / o[2] - 0.05)), cost = Math.round(packs*o[1]*100)/100;
+    if (!best || cost < best.cost - 0.001) best = { name:o[0], price:o[1], g:o[2], url:o[3], packs, cost };
+  }
+  return best;
+}
+function basketTotal(store, list){
+  if (!PRICES[store]) return null;
+  return list.reduce((a,it) => a + (offer(store,it)?.cost || 0), 0);
+}
+const priceDate = PRICES.date;
+
+// ---------- render ----------
+function render(){
+  const t = state.target, p = state.profile;
+  $("kcal").innerHTML = nf(t.kcal) + "<small>kcal per dieną</small>";
+  const goalTxt = {lose:"Apie 18 % mažiau nei", keep:"Tiek pat, kiek", gain:"Apie 10 % daugiau nei"}[p.goal];
+  $("kcalSub").textContent = `${goalTxt} jūsų apskaičiuotos išeikvojamos energijos: ${nf(t.tdee)} kcal (ramybės būsenoje ${nf(t.bmr)} kcal).`;
+  const mac = [["Baltymai",t.protein,4,"--p"],["Angliavandeniai",t.carbs,4,"--c"],["Riebalai",t.fat,9,"--f"]];
+  $("macros").innerHTML = mac.map(([n,g,_,c]) => `<div class="macro"><div class="lab"><span class="dot" style="background:var(${c})"></span>${n}</div><div class="val">${g}<small> g</small></div></div>`).join("");
+  $("macroBar").innerHTML = mac.map(([,g,k,c]) => `<span style="width:${(g*k/t.kcal*100).toFixed(1)}%;background:var(${c})"></span>`).join("");
+
+  if (state.plan.missing){
+    const msg = `<div class="empty">Pagal šiuos pasirinkimus neradome receptų: ${state.plan.missing.join(", ").toLowerCase()}. Pabandykite atžymėti kurį nors „Neįtraukti“ pasirinkimą.</div>`;
+    $("days").innerHTML = msg; $("shop").innerHTML = msg; $("prep").innerHTML = msg; $("stores").innerHTML = ""; $("planMeta").textContent = ""; $("shopMeta").textContent = "";
+    return;
+  }
+  renderStores(); renderPlan(); renderPrep(); renderShop();
+  $("tab-prep").hidden = !state.plan.prep; if (!state.plan.prep && state.tab==="prep") setTab("plan");
+}
+
+function renderStores(){
+  const list = shoppingList();
+  const totals = STORES.map(s => ({ s, t:basketTotal(s.id, list) }));
+  const min = Math.min(...totals.filter(x=>x.t!=null).map(x=>x.t));
+  $("stores").innerHTML = totals.map(({s,t}) => `
+    <div class="store">
+      <input type="radio" name="store" id="st-${s.id}" value="${s.id}" ${s.id===state.store?"checked":""}>
+      <label for="st-${s.id}">
+        <span class="sn">${s.n}</span>
+        <span class="sd">${s.d}</span>
+        ${t!=null ? `<span class="st num">${eur(t)}</span>` : `<span class="st na">Tik kiekiai</span>`}
+      </label>
+      ${t!=null && Math.abs(t-min)<0.005 ? '<span class="badge">Pigiau</span>' : ""}
+    </div>`).join("");
+}
+
+function renderPlan(){
+  const t = state.target;
+  let wk = 0;
+  $("days").innerHTML = state.plan.days.map((day, d) => {
+    const tot = {k:0,p:0,c:0,f:0};
+    const rows = day.meals.map((m, mi) => {
+      const r = recipeOf(m.id), n = mealNutr(m);
+      Object.keys(tot).forEach(k => tot[k]+=n[k]);
+      const ing = mealGrams(m).map(([k,q]) => { const x=I[k]; const pc = x[11] && Math.abs(q/x[11]-Math.round(q/x[11]))<0.3 && q/x[11]>=0.7 ? ` (${Math.round(q/x[11])} vnt.)` : ""; return `<li><span>${esc(x[1])}</span><span class="num">${fmtG(Math.max(5, Math.round(q/5)*5))}${pc}</span></li>`; }).join("");
+      return `<div class="meal">
+        <div class="mt">${MEAL[m.ty]}</div>
+        <div>
+          <div class="mn">${esc(r.n)}</div>
+          <div class="mm num">${r0(n.k)} kcal · B ${r0(n.p)} · A ${r0(n.c)} · R ${r0(n.f)} · ${r.min} min.</div>
+          <details class="ing"><summary>Receptas</summary>
+            <div class="rec">
+              <div><p class="rh">Produktai 1 asmeniui</p><ul>${ing}</ul></div>
+              <div><p class="rh">Gaminimas</p><ol>${r.s.map(x=>`<li>${esc(x)}</li>`).join("")}</ol></div>
+            </div>
+          </details>
+        </div>
+        <button class="btn sm" type="button" data-swap="${d}:${mi}" aria-label="Keisti: ${DAYS[d]}, ${MEAL[m.ty].toLowerCase()}">Keisti</button>
+      </div>`;
+    }).join("");
+    wk += tot.k;
+    const diff = (tot.k - t.kcal)/t.kcal;
+    return `<article class="day">
+      <div class="day-h"><h3>${DAYS[d]}${state.plan.prep?`<span class="chip">Pagaminta ${BATCHES[batchOf(d)].when.toLowerCase()}</span>`:""}</h3>
+        <div class="tot num"><b class="${Math.abs(diff)<=0.07?"ok":"off"}">${nf(tot.k)} kcal</b> · B ${r0(tot.p)} g · A ${r0(tot.c)} g · R ${r0(tot.f)} g</div></div>
+      ${rows}
+    </article>`;
+  }).join("");
+  const avgP = state.plan.days.reduce((a,day)=>a+day.meals.reduce((b,m)=>b+mealNutr(m).p,0),0)/7;
+  $("planMeta").textContent = (state.plan.prep ? "Gaminate 2 kartus per savaitę, todėl patiekalai kartojasi partijos dienomis. " : "") + `Savaitės vidurkis: ${nf(wk/7)} kcal ir ${r0(avgP)} g baltymų per dieną (tikslas ${nf(t.kcal)} kcal ir ${t.protein} g).`;
+}
+
+function renderShop(){
+  const list = shoppingList();
+  const s = STORES.find(z=>z.id===state.store);
+  const ppl = state.profile.people;
+  $("shopMeta").textContent = `${list.length} ${prod(list.length)} 7 dienoms · ${ppl} ${ppl>1?"asm.":"asmeniui"} · kainos: ${s.n}`;
+  let html = "";
+  AISLES.forEach(a => {
+    const items = list.filter(it => it.x[10]===a).sort((x,y)=>x.x[1].localeCompare(y.x[1], "lt"));
+    if (!items.length) return;
+    html += `<div class="aisle"><h3>${a}</h3><div class="items">` + items.map(it => {
+      const done = state.done.has(it.k);
+      const pcs = it.x[11] ? ` · ≈${Math.ceil(it.g/it.x[11])} vnt.` : "";
+      const o = offer(s.id, it);
+      return `<label class="item${done?" done":""}" for="ck-${it.k}">
+        <input type="checkbox" id="ck-${it.k}" data-k="${it.k}" ${done?"checked":""}>
+        <span class="nm">${esc(it.x[1])}${o ? `<small><a href="${esc(o.url)}" target="_blank" rel="noopener">${esc(o.name)}</a> · ${eur(o.price)}</small>` : ""}</span>
+        <span class="need num">reikia ${fmtG(it.g)}${pcs}</span>
+        <span class="pk">${o ? `${o.packs} pak.` : `${it.packs} × ${esc(it.x[8])}`}</span>
+        <span class="pr">${o ? eur(o.cost) : "–"}</span>
+      </label>`; }).join("") + `</div></div>`;
+  });
+  const total = basketTotal(s.id, list);
+  if (total != null) {
+    html += `<div class="total"><span>Suma, <b>${s.n}</b> e. parduotuvės kainomis</span><span class="big num">${eur(total)}</span></div>`;
+    html += `<p class="note">Kainos surinktos ${priceDate}. Kiekvienam produktui parinkta pakuotė, kuri reikiamam kiekiui kainuoja mažiausiai. Paspaudę pavadinimą jį atidarysite parduotuvės svetainėje. Pakuotės suapvalintos į didesnę pusę, todėl aliejaus, medaus ir kruopų liks ir kitai savaitei.</p>`;
+  } else {
+    html += `<div class="total"><span><b>${s.n}</b> kainų internete neskelbia, todėl sąraše nurodyti tik kiekiai.</span></div>`;
+    html += `<p class="note">Palyginimui galite pasirinkti Maxima arba Rimi, kurių kainos paimtos iš e. parduotuvių.</p>`;
+  }
+  $("shop").innerHTML = html;
+}
+
+function listText(){
+  const list = shoppingList(); const s = STORES.find(z=>z.id===state.store);
+  let out = `Krepšelis · ${s.n} · 7 dienos\n`;
+  AISLES.forEach(a => { const items = list.filter(it=>it.x[10]===a); if(!items.length) return; out += `\n${a}\n`; items.forEach(it => { const o = offer(s.id, it); out += o ? `- ${it.x[1]}: ${o.name} × ${o.packs}  ${eur(o.cost)}\n` : `- ${it.x[1]}: ${it.packs} × ${it.x[8]}\n`; }); });
+  const tot = basketTotal(s.id,list); if (tot != null) out += `\nSuma: ${eur(tot)} (kainos ${priceDate})\n`;
+  return out;
+}
+
+let toastT;
+function toast(msg){ const t=$("toast"); t.textContent=msg; t.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>t.hidden=true,2200); }
+
+function generate(newSeed){
+  state.profile = readForm();
+  state.target = computeTarget(state.profile);
+  if (newSeed) state.seed = Math.floor(Math.random()*1e6);
+  state.plan = buildPlan(state.profile, state.target, state.seed);
+  state.done.clear();
+  save(); render();
+}
+
+// ---------- events ----------
+$("profile").addEventListener("submit", e => { e.preventDefault(); generate(true); toast("Nauja savaitė paruošta"); if (innerWidth<900) $("tg-h").scrollIntoView({behavior:"smooth"}); });
+$("profile").addEventListener("change", () => generate(false));
+$("reshuffle").addEventListener("click", () => generate(true));
+$("stores").addEventListener("change", e => { if (e.target.name==="store"){ state.store=e.target.value; save(); renderShop(); } });
+$("days").addEventListener("click", e => { const b=e.target.closest("[data-swap]"); if(!b) return; const [d,mi]=b.dataset.swap.split(":").map(Number); swapMeal(d,mi); });
+$("shop").addEventListener("change", e => { const k=e.target.dataset?.k; if(!k) return; e.target.checked?state.done.add(k):state.done.delete(k); e.target.closest(".item").classList.toggle("done", e.target.checked); });
+function setTab(which){
+  if (which==="prep" && !state.profile?.prep) which = "plan";
+  state.tab = which;
+  ["plan","prep","shop"].forEach(t => { $("tab-"+t).setAttribute("aria-selected", t===which); $("view-"+t).hidden = t!==which; });
+}
+$("tab-plan").addEventListener("click", () => setTab("plan"));
+$("tab-shop").addEventListener("click", () => setTab("shop"));
+$("tab-prep").addEventListener("click", () => setTab("prep"));
+$("copy").addEventListener("click", () => {
+  const txt = listText();
+  const fb = () => { const ta=$("copyFallback"); ta.value=txt; ta.hidden=false; ta.focus(); ta.select(); toast("Pažymėkite ir nukopijuokite tekstą žemiau"); };
+  try { navigator.clipboard.writeText(txt).then(()=>toast("Pirkinių sąrašas nukopijuotas"), fb); } catch(e){ fb(); }
+});
+
+generate(false);
+</script>
