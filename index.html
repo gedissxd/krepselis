@@ -93,6 +93,7 @@ main{display:grid;gap:20px;min-width:0}
 .store .sn{font-weight:700;font-family:var(--display);font-size:16px}
 .store .sd{font-size:12px;color:var(--muted)}
 .store .st{font-family:var(--mono);font-size:15px;margin-top:6px}
+.store .est,.item .pr.est{color:var(--muted)}
 .store .na{font-size:13px;color:var(--muted);margin-top:6px}
 .item .nm small a{color:inherit;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:2px}
 .item .nm small a:hover{color:var(--accent)}
@@ -288,7 +289,7 @@ textarea.fallback{width:100%;min-height:160px;margin-top:10px;font-family:var(--
         <p class="eyebrow">2 žingsnis</p>
         <h2 id="st-h">Kur pirksite?</h2>
         <div class="stores" id="stores" role="radiogroup" aria-label="Parduotuvė"></div>
-        <p class="note">Maximos ir Rimi sumos skaičiuojamos tikromis jų e. parduotuvių kainomis (Maximos kainos iš Barbora). Fizinėje parduotuvėje kainos ir akcijos gali skirtis. Lidl, Iki ir Norfa produktų kainų internete neskelbia.</p>
+        <p class="note">Maximos ir Rimi sumos skaičiuojamos tikromis jų e. parduotuvių kainomis (Maximos kainos iš Barbora). Fizinėje parduotuvėje kainos ir akcijos gali skirtis. Lidl, Iki ir Norfa produktų kainų internete neskelbia, todėl jų sumos preliminarios (pažymėtos ≈), apskaičiuotos pagal 2026 m. liepos krepšelių kainų tyrimą.</p>
       </section>
 
       <section class="panel" aria-labelledby="pl-h">
@@ -457,9 +458,10 @@ const PRICES = {"date":"2026-11-05","maxima":{"oats":[["Visų grūdo dalių avi�
 const STORES = [
   {id:"maxima", n:"Maxima", d:"Kainos iš Barbora e. parduotuvės", live:true},
   {id:"rimi",   n:"Rimi",   d:"Kainos iš Rimi e. parduotuvės", live:true},
-  {id:"lidl",   n:"Lidl",   d:"Kainų internete neskelbia"},
-  {id:"iki",    n:"Iki",    d:"Kainų internete neskelbia"},
-  {id:"norfa",  n:"Norfa",  d:"Kainų internete neskelbia"},
+  // Preliminary: Maxima/Rimi average x index from the SeeNext basket survey (2026-07): Lidl 32.74, Rimi 34.94, Maxima 35.93, Norfa 36.61, Iki 37.90.
+  {id:"lidl",   n:"Lidl",   d:"Preliminari kaina", est:0.92},
+  {id:"iki",    n:"Iki",    d:"Preliminari kaina", est:1.07},
+  {id:"norfa",  n:"Norfa",  d:"Preliminari kaina", est:1.03},
 ];
 const MEAL = {b:"Pusryčiai", l:"Pietūs", d:"Vakarienė", s:"Užkandis"};
 const DAYS = ["Pirmadienis","Antradienis","Trečiadienis","Ketvirtadienis","Penktadienis","Šeštadienis","Sekmadienis"];
@@ -664,9 +666,16 @@ function offer(store, it){
   }
   return best;
 }
+function estimate(store, it){
+  const s = STORES.find(z=>z.id===store); if (!s || !s.est) return null;
+  const a = offer("maxima", it), b = offer("rimi", it); if (!a && !b) return null;
+  const base = a && b ? (a.cost + b.cost)/2 : (a || b).cost;
+  return { cost: Math.round(base * s.est * 100)/100, packs: Math.min(...[a,b].filter(Boolean).map(o=>o.packs)) };
+}
 function basketTotal(store, list){
-  if (!PRICES[store]) return null;
-  return list.reduce((a,it) => a + (offer(store,it)?.cost || 0), 0);
+  if (PRICES[store]) return list.reduce((a,it) => a + (offer(store,it)?.cost || 0), 0);
+  if (STORES.find(z=>z.id===store)?.est) return list.reduce((a,it) => a + (estimate(store,it)?.cost || 0), 0);
+  return null;
 }
 const priceDate = PRICES.date;
 
@@ -692,16 +701,16 @@ function render(){
 function renderStores(){
   const list = shoppingList();
   const totals = STORES.map(s => ({ s, t:basketTotal(s.id, list) }));
-  const min = Math.min(...totals.filter(x=>x.t!=null).map(x=>x.t));
+  const min = Math.min(...totals.filter(x=>x.t!=null && !x.s.est).map(x=>x.t));
   $("stores").innerHTML = totals.map(({s,t}) => `
     <div class="store">
       <input type="radio" name="store" id="st-${s.id}" value="${s.id}" ${s.id===state.store?"checked":""}>
       <label for="st-${s.id}">
         <span class="sn">${s.n}</span>
         <span class="sd">${s.d}</span>
-        ${t!=null ? `<span class="st num">${eur(t)}</span>` : `<span class="st na">Tik kiekiai</span>`}
+        ${t==null ? `<span class="st na">Tik kiekiai</span>` : s.est ? `<span class="st num est">≈ ${eur(t)}</span>` : `<span class="st num">${eur(t)}</span>`}
       </label>
-      ${t!=null && Math.abs(t-min)<0.005 ? '<span class="badge">Pigiau</span>' : ""}
+      ${t!=null && !s.est && Math.abs(t-min)<0.005 ? '<span class="badge">Pigiau</span>' : ""}
     </div>`).join("");
 }
 
@@ -753,17 +762,20 @@ function renderShop(){
     html += `<div class="aisle"><h3>${a}</h3><div class="items">` + items.map(it => {
       const done = state.done.has(it.k);
       const pcs = it.x[11] ? ` · ≈${Math.ceil(it.g/it.x[11])} vnt.` : "";
-      const o = offer(s.id, it);
+      const o = offer(s.id, it), e = o ? null : estimate(s.id, it);
       return `<label class="item${done?" done":""}" for="ck-${it.k}">
         <input type="checkbox" id="ck-${it.k}" data-k="${it.k}" ${done?"checked":""}>
         <span class="nm">${esc(it.x[1])}${o ? `<small><a href="${esc(o.url)}" target="_blank" rel="noopener">${esc(o.name)}</a> · ${eur(o.price)}</small>` : ""}</span>
         <span class="need num">reikia ${fmtG(it.g)}${pcs}</span>
-        <span class="pk">${o ? `${o.packs} pak.` : `${it.packs} × ${esc(it.x[8])}`}</span>
-        <span class="pr">${o ? eur(o.cost) : "–"}</span>
+        <span class="pk">${o ? `${o.packs} pak.` : e ? `≈ ${e.packs} pak.` : `${it.packs} × ${esc(it.x[8])}`}</span>
+        <span class="pr${e?" est":""}">${o ? eur(o.cost) : e ? "≈ " + eur(e.cost) : "–"}</span>
       </label>`; }).join("") + `</div></div>`;
   });
   const total = basketTotal(s.id, list);
-  if (total != null) {
+  if (total != null && s.est) {
+    html += `<div class="total"><span>Preliminari suma, <b>${s.n}</b></span><span class="big num">≈ ${eur(total)}</span></div>`;
+    html += `<p class="note">${s.n} produktų kainų internete neskelbia, todėl suma apytikslė: Maximos ir Rimi kainų vidurkis × ${String(s.est).replace(".", ",")}. Koeficientas paimtas iš 2026 m. liepos SeeNext krepšelio tyrimo (Lidl 32,74 €, Rimi 34,94 €, Maxima 35,93 €, Norfa 36,61 €, Iki 37,90 €). Tikra suma parduotuvėje gali skirtis keliais eurais.</p>`;
+  } else if (total != null) {
     html += `<div class="total"><span>Suma, <b>${s.n}</b> e. parduotuvės kainomis</span><span class="big num">${eur(total)}</span></div>`;
     html += `<p class="note">Kainos surinktos ${priceDate}. Kiekvienam produktui parinkta pakuotė, kuri reikiamam kiekiui kainuoja mažiausiai. Paspaudę pavadinimą jį atidarysite parduotuvės svetainėje. Pakuotės suapvalintos į didesnę pusę, todėl aliejaus, medaus ir kruopų liks ir kitai savaitei.</p>`;
   } else {
@@ -776,8 +788,8 @@ function renderShop(){
 function listText(){
   const list = shoppingList(); const s = STORES.find(z=>z.id===state.store);
   let out = `Krepšelis · ${s.n} · 7 dienos\n`;
-  AISLES.forEach(a => { const items = list.filter(it=>it.x[10]===a); if(!items.length) return; out += `\n${a}\n`; items.forEach(it => { const o = offer(s.id, it); out += o ? `- ${it.x[1]}: ${o.name} × ${o.packs}  ${eur(o.cost)}\n` : `- ${it.x[1]}: ${it.packs} × ${it.x[8]}\n`; }); });
-  const tot = basketTotal(s.id,list); if (tot != null) out += `\nSuma: ${eur(tot)} (kainos ${priceDate})\n`;
+  AISLES.forEach(a => { const items = list.filter(it=>it.x[10]===a); if(!items.length) return; out += `\n${a}\n`; items.forEach(it => { const o = offer(s.id, it), e = o ? null : estimate(s.id, it); out += o ? `- ${it.x[1]}: ${o.name} × ${o.packs}  ${eur(o.cost)}\n` : e ? `- ${it.x[1]}: ≈ ${e.packs} pak.  ≈ ${eur(e.cost)}\n` : `- ${it.x[1]}: ${it.packs} × ${it.x[8]}\n`; }); });
+  const tot = basketTotal(s.id,list); if (tot != null) out += s.est ? `\nPreliminari suma: ≈ ${eur(tot)}\n` : `\nSuma: ${eur(tot)} (kainos ${priceDate})\n`;
   return out;
 }
 
