@@ -10,3 +10,8 @@ Q = {
  "beet":"burokėliai","cabbage":"baltagūžiai kopūstai","tomato":"pomidorai","cucumber":"agurkai","onion":"svogūnai",
  "pepper":"paprikos","mushroom":"pievagrybiai","broccoli":"šaldyti brokoliai","spinach":"šaldyti špinatai","mixveg":"šaldytų daržovių mišinys",
 }
+Q.update({
+ "salt":"valgomoji druska","bpepper":"juodieji pipirai malti","garlic":"česnakai","dill":"krapai","lemon":"citrinos",
+ "curry":"kario prieskoniai","cumin":"kmynai","paprikap":"malta paprika",
+ "chili":"čili pipirai malti","turmeric":"ciberžolė","vinegar":"obuolių actas",
+})

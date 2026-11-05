@@ -57,3 +57,31 @@ EXTRA = {
 }
 for _k, _x in EXTRA.items():
     _i, _e, _u = RULES[_k]; RULES[_k] = (_i, _x + "|" + _e, _u)
+SPICE_X = r"mišin|ekol|eco|padaž|marinat|sūr|traškuč|duon|dešr|sūd\.|sriub|užpil|aliej|majonez|garstyč|kečup|kepsn|sultys|sult|gėrim|arbat|limonad|vanduo|kremas|ledai|sausain|pyrag|šokolad|desert|jogurt|kokteil|uogien|guminuk"
+RULES.update({
+ "salt":     ([r"druska"], SPICE_X + r"|jūros|himalaj|rožin|česnak|žolel|prieskon|kalio|maudyn|vonios|tabletės|indaplov", "kg"),
+ "bpepper":  ([r"juod\w* pipir", r"malt"], SPICE_X + r"|citrin|žirnel|grūdel", "kg"),
+ "garlic":   ([r"česnak"], SPICE_X + r"|milteli|granul|džiovint|marinuot|pasta|duonel|traškuč|česnakų sk|laišk|juodas|prieskon", "kg"),
+ "dill":     ([r"krap"], SPICE_X + r"|džiovint|sėkl|agurk|bulv|prieskon|marinuot", "kg"),
+ "lemon":    ([r"citrin"], SPICE_X + r"|rūgšt|pipir|žolė|melis|skon|kvap|aromat|sulčių|džiovint|tarkuot|kur|prieskon|imbier|medus|vanden", "kg"),
+ "curry":    ([r"\bkari|kario|curry"], r"karij|mang|vištien|pasta|kokos|ryž|makaron|konserv|lapai|padaž|ekol", "kg"),
+ "cumin":    ([r"^kmynai|^kmynų sėklos"], r"rūk|sūr|arb|duon|ekol", "kg"),
+ "oregano":  ([r"raudonėl|oregan"], r"pica|aliej|mišin|ekol|padaž", "kg"),
+ "paprikap": ([r"paprik", r"malt|milteli|prieskon"], SPICE_X + r"|traškuč|dešr|chips|rūkyt|aštr", "kg"),
+ "chili":    ([r"aitri\w* paprik|čili pipir|čili milteli", r"malt|milteli|grūst"], r"rūkyt|malūnėl|traškuč|padaž|pupel|ekol|carolina", "kg"),
+ "turmeric": ([r"ciberž|kurkum"], r"šakniast|actas|acto|imbier|kapsul|gėrim|latte|ekol", "kg"),
+ "vinegar":  ([r"actas"], SPICE_X + r"|balzam|valym|kalk|vyno", "l|kg"),
+})
+
+SPICES = {"salt","bpepper","garlic","dill","lemon","curry","cumin","paprikap","chili","turmeric","vinegar"}
+
+for _k, _x in {"garlic": r"baton|druska|duon", "turmeric": r"sūr", "paprikap": r"aitri", "dill": r"silk|šaldyt"}.items():
+    _i, _e, _u = RULES[_k]; RULES[_k] = (_i, _x + "|" + _e, _u)
+del RULES["oregano"]
+RULES["garlic"] = ([r"^(lietuviški |švieži )?česnak"], RULES["garlic"][1], "kg")
+RULES["dill"] = ([r"^(švieži )?krap"], RULES["dill"][1], "kg")
+RULES["lemon"] = ([r"^citrin|^žaliosios citrin"], r"alyvuog|tartal|ek\.|ekol", "kg")
+RULES["salt"] = ([r"^(valgomoji|joduotoji)"], r"juodot|rupi|malūnėl|kvap|svanų|kanapin", "kg")
+RULES["vinegar"] = ([r"^(spirito|obuolių) actas|^bajoriškių (spirito|obuolių) actas"], r"skalbim|detox|ciberž|prieskon|balz", "l|kg")
+RULES["dill"] = (RULES["dill"][0], r"rinkin|" + RULES["dill"][1], "kg")
+RULES["lemon"] = ([r"^citrinos|^žaliosios citrinos"], r"alyvuog|tartal|ek\.|ekol", "kg")

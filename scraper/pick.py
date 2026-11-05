@@ -1,7 +1,7 @@
 import re, sys, os, json
 sys.path.insert(0, os.path.dirname(__file__))
 from parse import barbora, rimi
-from rules import RULES, COMMON_X, DRAINED
+from rules import RULES, COMMON_X, DRAINED, SPICES
 def pack_grams(p, key):
     n = p["name"]
     if key == "eggs":
@@ -24,7 +24,7 @@ def candidates(L, key):
         if re.search(exc, n) or re.search(COMMON_X, n): continue
         if not re.fullmatch(uu, p["uu"].rstrip(".")): continue
         g = pack_grams(p, key)
-        if not g or g < 50: continue
+        if not g or g < (5 if key in SPICES else 50): continue
         out.append(dict(p, g=g, per_kg=round(p["price"]/g*1000, 2)))
     return sorted(out, key=lambda x: x["per_kg"])
 if __name__ == "__main__":
